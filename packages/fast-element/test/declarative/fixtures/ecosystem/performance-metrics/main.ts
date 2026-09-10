@@ -2,6 +2,9 @@ import { attr } from "@microsoft/fast-element/attr.js";
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 import { FASTElement } from "@microsoft/fast-element/fast-element.js";
 import { enableHydration } from "@microsoft/fast-element/hydration.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 import { volatile } from "@microsoft/fast-element/volatile.js";
 
 performance.mark("hydration:started");
@@ -23,5 +26,7 @@ class FastCard extends FASTElement {
 
 FastCard.define({
     name: "fast-card",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });

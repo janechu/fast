@@ -62,17 +62,6 @@ Defines metadata for a FASTElement.
 </td></tr>
 <tr><td>
 
-[HTMLView](../fast-element.htmlview/)
-
-
-</td><td>
-
-The standard View implementation, which also implements ElementView and SyntheticView.
-
-
-</td></tr>
-<tr><td>
-
 [Schema](../fast-element.schema/)
 
 
@@ -89,7 +78,7 @@ A constructed JSON schema from a template
 
 </td><td>
 
-Converts declarative HTML template markup into the `strings` and `values` arrays that `ViewTemplate.create()` consumes.
+Converts declarative HTML template markup into the `strings` and `values` arrays consumed by the low-level part-backed declarative compiler.
 
 This class is intentionally stateless across invocations — all mutable parsing state lives on the call stack or in the `TemplateResolutionContext`<!-- -->.
 
@@ -125,7 +114,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[declarativeTemplate()](../fast-element.declarativetemplate/)
+[declarativeTemplate(options)](../fast-element.declarativetemplate/)
 
 
 </td><td>
@@ -201,6 +190,138 @@ A marker interface used to capture types when interpolating Directive helpers in
 </td><td>
 
 Describes a child custom element binding referenced by a schema path.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativeAttributePartPonyfill](../fast-element.declarativeattributepartponyfill/)
+
+
+</td><td>
+
+Creates parts that update an element attribute.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativeChildNodePartPonyfill](../fast-element.declarativechildnodepartponyfill/)
+
+
+</td><td>
+
+Creates parts that own a mutable child-node range.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativeDOMSchedulerPonyfill](../fast-element.declarativedomschedulerponyfill/)
+
+
+</td><td>
+
+Schedules a binding effect relative to its target node.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativeEventPartPonyfill](../fast-element.declarativeeventpartponyfill/)
+
+
+</td><td>
+
+Creates FAST's event-target extension to DOM Parts.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativeNodePartPonyfill](../fast-element.declarativenodepartponyfill/)
+
+
+</td><td>
+
+Creates parts that update a single DOM node.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativePonyfillGroup](../fast-element.declarativeponyfillgroup/)
+
+
+</td><td>
+
+Groups independently importable ponyfills without adding another runtime layer.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativePonyfillRuntime](../fast-element.declarativeponyfillruntime/)
+
+
+</td><td>
+
+The validated capabilities used by a declarative template.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativePropertyPartPonyfill](../fast-element.declarativepropertypartponyfill/)
+
+
+</td><td>
+
+Creates FAST's property-target extension to DOM Parts.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativeSignalsPonyfill](../fast-element.declarativesignalsponyfill/)
+
+
+</td><td>
+
+Creates reactive bindings for declarative expressions.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativeTemplateOptions](../fast-element.declarativetemplateoptions/)
+
+
+</td><td>
+
+Options for configuring declarative template platform ponyfills.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativeTokenListPartPonyfill](../fast-element.declarativetokenlistpartponyfill/)
+
+
+</td><td>
+
+Creates FAST's token-list extension to DOM Parts.
+
+
+</td></tr>
+<tr><td>
+
+[DeclarativeViewPartPonyfill](../fast-element.declarativeviewpartponyfill/)
+
+
+</td><td>
+
+Creates FAST's view-composition extension to DOM Parts.
 
 
 </td></tr>
@@ -577,6 +698,17 @@ A type that instantiates a StyleStrategy.
 </td></tr>
 <tr><td>
 
+[DeclarativePonyfill](../fast-element.declarativeponyfill/)
+
+
+</td><td>
+
+A low-level capability accepted by [declarativeTemplate()](../fast-element.declarativetemplate/)<!-- -->.
+
+
+</td></tr>
+<tr><td>
+
 [DOMAspect](../fast-element.domaspect/)
 
 
@@ -671,17 +803,6 @@ A callback that receives a FASTElementDefinition during element registration. Ex
 </td><td>
 
 Resolves an element template from a composed definition.
-
-
-</td></tr>
-<tr><td>
-
-[TemplateValue](../fast-element.templatevalue/)
-
-
-</td><td>
-
-Represents the types of values that can be interpolated into a template.
 
 
 </td></tr>

@@ -1,6 +1,9 @@
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { build } from "esbuild";
+import { declarativeParts } from "../ponyfills/declarative-parts.js";
+import { domScheduler } from "../ponyfills/dom-scheduler.js";
+import { signals } from "../ponyfills/signals.js";
 import { DeclarativeTemplateBridge } from "./template-bridge.js";
 
 const packageRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -173,16 +176,27 @@ test.describe("declarativeTemplate", () => {
 
         const result = await page.evaluate(async pureEntrypointUrl => {
             // @ts-expect-error: Client module.
-            const { enableHydration, html, isHydratable } = await import("/main.js");
-
-            const beforeRuntimeTemplate = html`<span>before</span>`;
-            const beforeImport = isHydratable(beforeRuntimeTemplate);
+            const { enableHydration, isHydratable } = await import("/main.js");
 
             // @ts-expect-error: Client module.
-            const { Schema, TemplateParser } = await import(pureEntrypointUrl);
-
-            const afterImport = isHydratable(html`<span>after import</span>`);
-            const parser = new TemplateParser();
+            const {
+                composeDeclarativePonyfills,
+                declarativeParts,
+                domScheduler,
+                Schema,
+                signals,
+                TemplateParser,
+                ViewTemplate,
+            } = await import(pureEntrypointUrl);
+            const beforeRuntimeTemplate = new ViewTemplate("<span>before</span>");
+            const beforeImport = isHydratable(beforeRuntimeTemplate);
+            const afterImport = isHydratable(
+                new ViewTemplate("<span>after import</span>"),
+            );
+            const runtime = composeDeclarativePonyfills({
+                ponyfills: [declarativeParts(), signals(), domScheduler()],
+            });
+            const parser = new TemplateParser(runtime);
             const schema = new Schema("lazy-template");
             const { strings, values } = parser.parse("<span>after create</span>", schema);
             const declarativeTemplate = parser.createTemplate(strings, values);
@@ -302,7 +316,9 @@ test.describe("declarativeTemplate", () => {
             const definePromise = TestElement.define(
                 {
                     name: elementName,
-                    template: declarativeTemplate(),
+                    template: declarativeTemplate({
+                        ponyfills: [declarativeParts(), signals(), domScheduler()],
+                    }),
                 },
                 [observerMap(), attributeMap()],
             );
@@ -391,7 +407,9 @@ test.describe("declarativeTemplate", () => {
                 {
                     name: elementName,
                     schema,
-                    template: declarativeTemplate(),
+                    template: declarativeTemplate({
+                        ponyfills: [declarativeParts(), signals(), domScheduler()],
+                    }),
                 },
                 [observerMap(), attributeMap()],
             );
@@ -458,7 +476,9 @@ test.describe("declarativeTemplate", () => {
 
             await TestElement.define({
                 name: elementName,
-                template: declarativeTemplate(),
+                template: declarativeTemplate({
+                    ponyfills: [declarativeParts(), signals(), domScheduler()],
+                }),
             });
 
             const templateElement = document.querySelector("f-template")!;
@@ -498,7 +518,9 @@ test.describe("declarativeTemplate", () => {
 
             await TestElement.define({
                 name: elementName,
-                template: declarativeTemplate(),
+                template: declarativeTemplate({
+                    ponyfills: [declarativeParts(), signals(), domScheduler()],
+                }),
             });
 
             const element = document.createElement(elementName);
@@ -537,7 +559,9 @@ test.describe("declarativeTemplate", () => {
 
             const definePromise = TestElement.define({
                 name: elementName,
-                template: declarativeTemplate(),
+                template: declarativeTemplate({
+                    ponyfills: [declarativeParts(), signals(), domScheduler()],
+                }),
             }).then(() => {
                 resolved = true;
             });
@@ -599,7 +623,9 @@ test.describe("declarativeTemplate", () => {
             let resolved = false;
             const definePromise = TestElement.define({
                 name: elementName,
-                template: declarativeTemplate(),
+                template: declarativeTemplate({
+                    ponyfills: [declarativeParts(), signals(), domScheduler()],
+                }),
             }).then(() => {
                 resolved = true;
             });
@@ -651,7 +677,9 @@ test.describe("declarativeTemplate", () => {
             let resolved = false;
             const definePromise = TestElement.define({
                 name: elementName,
-                template: declarativeTemplate(),
+                template: declarativeTemplate({
+                    ponyfills: [declarativeParts(), signals(), domScheduler()],
+                }),
             }).then(() => {
                 resolved = true;
             });
@@ -721,7 +749,9 @@ test.describe("declarativeTemplate", () => {
             try {
                 await TestElement.define({
                     name: elementName,
-                    template: declarativeTemplate(),
+                    template: declarativeTemplate({
+                        ponyfills: [declarativeParts(), signals(), domScheduler()],
+                    }),
                 });
             } catch (error) {
                 defineError = (error as Error).message;

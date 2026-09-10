@@ -5,6 +5,9 @@ import { FASTElement } from "@microsoft/fast-element/fast-element.js";
 import { enableHydration } from "@microsoft/fast-element/hydration.js";
 import { observable } from "@microsoft/fast-element/observable.js";
 import { observerMap } from "@microsoft/fast-element/observer-map.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 (window as any).messages = [];
 
@@ -150,7 +153,9 @@ export class TestElementRepeatEvent extends FASTElement {
 }
 TestElementRepeatEvent.define({
     name: "test-element-repeat-event",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 export class TestWhenInRepeat extends FASTElement {
@@ -168,7 +173,9 @@ export class TestWhenInRepeat extends FASTElement {
 TestWhenInRepeat.define(
     {
         name: "test-when-in-repeat",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -198,7 +205,9 @@ export class ParentBoundChild extends FASTElement {
 ParentBoundChild.define(
     {
         name: "parent-bound-child",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -217,7 +226,9 @@ export class ParentBindingHost extends FASTElement {
 ParentBindingHost.define(
     {
         name: "parent-binding-host",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -225,7 +236,9 @@ ParentBindingHost.define(
 ItemList.define(
     {
         name: "parent-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -233,7 +246,9 @@ ItemList.define(
 Item.define(
     {
         name: "child-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -241,7 +256,9 @@ Item.define(
 GrandChildItem.define(
     {
         name: "grand-child-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );

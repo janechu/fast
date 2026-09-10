@@ -47,15 +47,4 @@ Creates a SyntheticView instance based on this template definition.
 
 
 </td></tr>
-<tr><td>
-
-[inline()](../fast-element.syntheticviewtemplate.inline/)
-
-
-</td><td>
-
-Returns a directive that can inline the template.
-
-
-</td></tr>
 </tbody></table>

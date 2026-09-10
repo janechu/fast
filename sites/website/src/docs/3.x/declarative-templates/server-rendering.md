@@ -77,7 +77,9 @@ The end-to-end flow from server to interactive page follows these steps:
 
 1. **Server renders** — The renderer resolves `{{bindings}}` against the state, injects Declarative Shadow DOM `<template>` elements, and adds hydration markers.
 2. **Browser loads HTML** — The browser parses the page. Declarative Shadow DOM `<template>` elements are automatically expanded into shadow roots.
-3. **JavaScript loads** — Component classes are defined with `template: declarativeTemplate()`, which waits for matching `<f-template>` elements and resolves the template.
+3. **JavaScript loads** — Component classes are defined with
+   `template: declarativeTemplate({ ponyfills })`, which waits for matching
+   `<f-template>` elements and resolves the template.
 4. **Template resolution** — `declarativeTemplate()` coordinates with the `<f-template>` elements to parse the declarative markup and supply the compiled template to each element definition.
 5. **Hydration** — If `enableHydration()` was called before FAST elements connect, FAST detects the pre-rendered shadow DOM, maps existing DOM nodes to binding slots using hydration markers, and re-establishes reactive observations. Without `enableHydration()`, the element renders client-side instead. By default, hydration no-ops after the initial hydration batch completes; set `stopHydration: StopHydration.never` for pages that stream Declarative Shadow DOM later. Await `enableHydration().whenHydrated()` when application code needs to wait for the active hydration batch. In `StopHydration.never` mode, that promise intentionally remains pending because there is no global completion point.
 6. **Interactive** — The page is fully interactive. Property changes trigger targeted DOM updates.
@@ -432,11 +434,18 @@ is available.
 ```
 
 ```ts
+import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
+
 class UserCard extends FASTElement {}
 
 UserCard.define({
     name: "user-card",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 ```
 

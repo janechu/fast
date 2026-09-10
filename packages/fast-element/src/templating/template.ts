@@ -1,21 +1,11 @@
-import { Binding } from "../binding/binding.js";
-import { oneTime } from "../binding/one-time.js";
-import { oneWay } from "../binding/one-way.js";
 import type { DOMPolicy } from "../dom-policy.js";
-import { isFunction, isString, Message } from "../interfaces.js";
-import type { Expression } from "../observation/observable.js";
+import { Message } from "../interfaces.js";
 import { FAST, makeSerializationNoop } from "../platform.js";
-import { Compiler } from "./compiler.js";
-import { HTMLBindingDirective } from "./html-binding-directive.js";
-import {
-    type AddViewBehaviorFactory,
-    type Aspected,
-    type CompiledViewBehaviorFactory,
-    HTMLDirective,
-    type HTMLDirectiveDefinition,
-    type ViewBehaviorFactory,
+import { type CompilationBindingFactory, Compiler } from "./compiler.js";
+import type {
+    CompiledViewBehaviorFactory,
+    ViewBehaviorFactory,
 } from "./html-directive.js";
-import { nextId } from "./markup.js";
 import type { ElementView, HTMLView, SyntheticView } from "./view.js";
 
 /**
@@ -73,11 +63,6 @@ export interface SyntheticViewTemplate<TSource = any, TParent = any> {
      * Creates a SyntheticView instance based on this template definition.
      */
     create(): SyntheticView<TSource, TParent>;
-
-    /**
-     * Returns a directive that can inline the template.
-     */
-    inline(): CaptureType<TSource, TParent>;
 }
 
 /**
@@ -101,75 +86,6 @@ export interface HTMLTemplateCompilationResult<TSource = any, TParent = any> {
     createView(hostBindingTarget?: Element): HTMLView<TSource, TParent>;
 
     readonly factories: CompiledViewBehaviorFactory[];
-}
-
-// Much thanks to LitHTML for working this out!
-const lastAttributeNameRegex =
-    /* eslint-disable-next-line no-control-regex, max-len */
-    /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
-
-/**
- * Represents the types of values that can be interpolated into a template.
- * @public
- */
-export type TemplateValue<TSource, TParent = any> =
-    | Expression<TSource, any, TParent>
-    | Binding<TSource, any, TParent>
-    | HTMLDirective
-    | CaptureType<TSource, TParent>;
-
-const noFactories = Object.create(null);
-
-/**
- * Inlines a template into another template.
- * @public
- */
-export class InlineTemplateDirective implements HTMLDirective {
-    /**
-     * An empty template partial.
-     */
-    public static readonly empty = new InlineTemplateDirective("");
-
-    /**
-     * Creates an instance of InlineTemplateDirective.
-     * @param template - The template to inline.
-     */
-    public constructor(
-        private html: string,
-        private factories: Record<string, ViewBehaviorFactory> = noFactories,
-    ) {}
-
-    /**
-     * Creates HTML to be used within a template.
-     * @param add - Can be used to add  behavior factories to a template.
-     */
-    public createHTML(add: AddViewBehaviorFactory): string {
-        const factories = this.factories;
-
-        for (const key in factories) {
-            add(factories[key]);
-        }
-
-        return this.html;
-    }
-}
-
-HTMLDirective.define(InlineTemplateDirective);
-
-function createHTML(
-    value: HTMLDirective,
-    prevString: string,
-    add: AddViewBehaviorFactory,
-    definition: HTMLDirectiveDefinition = HTMLDirective.getForInstance(value)!,
-): string {
-    if (definition.aspected) {
-        const match = lastAttributeNameRegex.exec(prevString);
-        if (match !== null) {
-            HTMLDirective.assignAspect(value as any as Aspected, match[2]);
-        }
-    }
-
-    return value.createHTML(add);
 }
 
 /**
@@ -203,6 +119,7 @@ export class ViewTemplate<TSource = any, TParent = any>
         html: string | HTMLTemplateElement,
         factories: Record<string, ViewBehaviorFactory> = {},
         private policy?: DOMPolicy,
+        private bindingFactory?: CompilationBindingFactory,
     ) {
         this.html = html;
         this.factories = factories;
@@ -217,20 +134,11 @@ export class ViewTemplate<TSource = any, TParent = any>
                 this.html,
                 this.factories,
                 this.policy,
+                this.bindingFactory,
             );
         }
 
         return this.result;
-    }
-
-    /**
-     * Returns a directive that can inline the template.
-     */
-    public inline(): CaptureType<TSource, TParent> {
-        return new InlineTemplateDirective(
-            isString(this.html) ? this.html : this.html.innerHTML,
-            this.factories,
-        );
     }
 
     /**
@@ -279,128 +187,6 @@ export class ViewTemplate<TSource = any, TParent = any>
     public create(hostBindingTarget?: Element): HTMLView<TSource, TParent> {
         return this.compile().createView(hostBindingTarget);
     }
-
-    /**
-     * Processes the tagged template literal's static strings and interpolated values and
-     * creates a ViewTemplate.
-     *
-     * For each interpolated value:
-     * 1. Functions (binding expressions, e.g., `x => x.name`) → wrapped in a one-way HTMLBindingDirective
-     * 2. Binding instances → wrapped in an HTMLBindingDirective
-     * 3. HTMLDirective instances → used as-is
-     * 4. Static values (strings, numbers) → wrapped in a one-time HTMLBindingDirective
-     *
-     * Each directive's createHTML() is called with an `add` callback that registers
-     * the factory in the factories record under a unique ID and returns that ID.
-     * The directive inserts a placeholder marker (e.g., `fast-abc123{0}fast-abc123`) into
-     * the HTML string so the compiler can later find and associate it with the factory.
-     *
-     * Aspect detection happens here too: the `lastAttributeNameRegex` checks whether
-     * the placeholder appears inside an attribute value, and if so, assignAspect()
-     * sets the correct DOMAspect (attribute, property, event, etc.) based on the
-     * attribute name prefix.
-     *
-     * @param strings - The static strings to create the template with.
-     * @param values - The dynamic values to create the template with.
-     * @param policy - The DOMPolicy to associated with the template.
-     * @returns A ViewTemplate.
-     * @remarks
-     * This API should not be used directly under normal circumstances because constructing
-     * a template in this way, if not done properly, can open up the application to XSS
-     * attacks. When using this API, provide a strong DOMPolicy that can properly sanitize
-     * and also be sure to manually sanitize all static strings particularly if they can
-     * come from user input.
-     */
-    public static create<TSource = any, TParent = any>(
-        strings: string[],
-        values: TemplateValue<TSource, TParent>[],
-        policy?: DOMPolicy,
-    ): ViewTemplate<TSource, TParent> {
-        let html = "";
-        const factories: Record<string, ViewBehaviorFactory> = Object.create(null);
-        const add = (factory: CompiledViewBehaviorFactory): string => {
-            const id = factory.id ?? (factory.id = nextId());
-            factories[id] = factory;
-            return id;
-        };
-
-        for (let i = 0, ii = strings.length - 1; i < ii; ++i) {
-            const currentString = strings[i];
-            let currentValue = values[i];
-            let definition: HTMLDirectiveDefinition | undefined;
-
-            html += currentString;
-
-            if (isFunction(currentValue)) {
-                currentValue = new HTMLBindingDirective(
-                    oneWay(currentValue as Expression<TSource, any, TParent>),
-                );
-            } else if (currentValue instanceof Binding) {
-                currentValue = new HTMLBindingDirective(currentValue);
-            } else if (!(definition = HTMLDirective.getForInstance(currentValue))) {
-                const staticValue = currentValue;
-                currentValue = new HTMLBindingDirective(oneTime(() => staticValue));
-            }
-
-            html += createHTML(
-                currentValue as HTMLDirective,
-                currentString,
-                add,
-                definition,
-            );
-        }
-
-        return new ViewTemplate<TSource, TParent>(
-            html + strings[strings.length - 1],
-            factories,
-            policy,
-        );
-    }
 }
 
 makeSerializationNoop(ViewTemplate);
-
-/**
- * Transforms a template literal string into a ViewTemplate.
- * @param strings - The string fragments that are interpolated with the values.
- * @param values - The values that are interpolated with the string fragments.
- * @remarks
- * The html helper supports interpolation of strings, numbers, binding expressions,
- * other template instances, and Directive instances.
- * @public
- */
-export type HTMLTemplateTag = (<TSource = any, TParent = any>(
-    strings: TemplateStringsArray,
-    ...values: TemplateValue<TSource, TParent>[]
-) => ViewTemplate<TSource, TParent>) & {
-    /**
-     * Transforms a template literal string into partial HTML.
-     * @param html - The HTML string fragment to interpolate.
-     * @public
-     */
-    partial(html: string): InlineTemplateDirective;
-};
-
-/**
- * Transforms a template literal string into a ViewTemplate.
- * @param strings - The string fragments that are interpolated with the values.
- * @param values - The values that are interpolated with the string fragments.
- * @remarks
- * The html helper supports interpolation of strings, numbers, binding expressions,
- * other template instances, and Directive instances.
- * @public
- */
-export const html: HTMLTemplateTag = (<TSource = any, TParent = any>(
-    strings: TemplateStringsArray,
-    ...values: TemplateValue<TSource, TParent>[]
-): ViewTemplate<TSource, TParent> => {
-    if (Array.isArray(strings) && Array.isArray(strings.raw)) {
-        return ViewTemplate.create(strings as any as string[], values);
-    }
-
-    throw FAST.error(Message.directCallToHTMLTagNotAllowed);
-}) as any;
-
-html.partial = (html: string): InlineTemplateDirective => {
-    return new InlineTemplateDirective(html);
-};

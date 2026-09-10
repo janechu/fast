@@ -4,6 +4,9 @@ import { FASTElement } from "@microsoft/fast-element/fast-element.js";
 import { enableHydration } from "@microsoft/fast-element/hydration.js";
 import { Observable, observable } from "@microsoft/fast-element/observable.js";
 import { observerMap, Schema } from "@microsoft/fast-element/observer-map.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 import { Updates } from "@microsoft/fast-element/updates.js";
 
 interface Product {
@@ -842,7 +845,9 @@ SharedArrayOwnerElement.define(
 DeepMergeTestElement.define(
     {
         name: "deep-merge-test-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );

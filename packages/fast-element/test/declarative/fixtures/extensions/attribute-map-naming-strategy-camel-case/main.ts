@@ -2,6 +2,9 @@ import { attr } from "@microsoft/fast-element/attr.js";
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 import { FASTElement } from "@microsoft/fast-element/fast-element.js";
 import { enableHydration } from "@microsoft/fast-element/hydration.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 class TestCamelCase extends FASTElement {
     @attr({ attribute: "foo-bar" })
@@ -9,7 +12,9 @@ class TestCamelCase extends FASTElement {
 }
 TestCamelCase.define({
     name: "test-camel-case",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestCamelCaseMulti extends FASTElement {
@@ -18,7 +23,9 @@ class TestCamelCaseMulti extends FASTElement {
 }
 TestCamelCaseMulti.define({
     name: "test-camel-case-multi",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestCamelCaseNoDash extends FASTElement {
@@ -27,7 +34,9 @@ class TestCamelCaseNoDash extends FASTElement {
 }
 TestCamelCaseNoDash.define({
     name: "test-camel-case-no-dash",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 const hydration = enableHydration();

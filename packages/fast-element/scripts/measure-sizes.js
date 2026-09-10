@@ -12,19 +12,14 @@ const fastElementImportPath = "@microsoft/fast-element/fast-element.js";
 const updatesImportPath = "@microsoft/fast-element/updates.js";
 const observableImportPath = "@microsoft/fast-element/observable.js";
 const attrImportPath = "@microsoft/fast-element/attr.js";
-const childrenImportPath = "@microsoft/fast-element/children.js";
-const refImportPath = "@microsoft/fast-element/ref.js";
-const slottedImportPath = "@microsoft/fast-element/slotted.js";
 const volatileImportPath = "@microsoft/fast-element/volatile.js";
-const whenImportPath = "@microsoft/fast-element/when.js";
-const htmlImportPath = "@microsoft/fast-element/html.js";
-const repeatImportPath = "@microsoft/fast-element/repeat.js";
 const cssImportPath = "@microsoft/fast-element/css.js";
 const declarativeImportPath = "@microsoft/fast-element/declarative.js";
 const hydrationImportPath = "@microsoft/fast-element/hydration.js";
 const arrayObserverImportPath = "@microsoft/fast-element/arrays.js";
 const observerMapImportPath = "@microsoft/fast-element/observer-map.js";
 const attributeMapImportPath = "@microsoft/fast-element/attribute-map.js";
+const ponyfillPath = name => `@microsoft/fast-element/ponyfills/${name}.js`;
 
 const namedExports = [{ name: "FASTElement", importPath: fastElementImportPath }];
 
@@ -50,39 +45,9 @@ const measuredExports = [
         importPath: attrImportPath,
     },
     {
-        name: "children",
-        export: "children",
-        importPath: childrenImportPath,
-    },
-    {
-        name: "ref",
-        export: "ref",
-        importPath: refImportPath,
-    },
-    {
-        name: "slotted",
-        export: "slotted",
-        importPath: slottedImportPath,
-    },
-    {
         name: "volatile",
         export: "volatile",
         importPath: volatileImportPath,
-    },
-    {
-        name: "when",
-        export: "when",
-        importPath: whenImportPath,
-    },
-    {
-        name: "html",
-        export: "html",
-        importPath: htmlImportPath,
-    },
-    {
-        name: "repeat",
-        export: "repeat",
-        importPath: repeatImportPath,
     },
     {
         name: "css",
@@ -113,6 +78,71 @@ const measuredExports = [
         name: "attributeMap",
         export: "attributeMap",
         importPath: attributeMapImportPath,
+    },
+    ...[
+        ["PartBase", "part"],
+        ["PartGroup", "part-group"],
+        ["nodeParts", "node-part"],
+        ["attributeParts", "attribute-part"],
+        ["childNodeParts", "child-node-part"],
+        ["propertyParts", "property-part"],
+        ["eventParts", "event-part"],
+        ["tokenListParts", "token-list-part"],
+        ["viewParts", "view-part"],
+        ["domParts", "dom-parts"],
+        ["declarativeParts", "declarative-parts"],
+        ["signalState", "signal-state"],
+        ["signalComputed", "signal-computed"],
+        ["signalEffect", "signal-effect"],
+        ["signals", "signals"],
+        ["domScheduler", "dom-scheduler"],
+    ].map(([name, path]) => ({
+        name,
+        export: name,
+        importPath: ponyfillPath(path),
+    })),
+];
+
+const measuredConfigurations = [
+    {
+        name: "declarative + aggregate parts",
+        contents: `
+            import { declarativeTemplate } from "${declarativeImportPath}";
+            import { declarativeParts } from "${ponyfillPath("declarative-parts")}";
+            import { signals } from "${ponyfillPath("signals")}";
+            import { domScheduler } from "${ponyfillPath("dom-scheduler")}";
+            export const template = declarativeTemplate({
+                ponyfills: [declarativeParts(), signals(), domScheduler()],
+            });
+        `,
+    },
+    {
+        name: "declarative + individual binding parts",
+        contents: `
+            import { declarativeTemplate } from "${declarativeImportPath}";
+            import { attributeParts } from "${ponyfillPath("attribute-part")}";
+            import { childNodeParts } from "${ponyfillPath("child-node-part")}";
+            import { eventParts } from "${ponyfillPath("event-part")}";
+            import { nodeParts } from "${ponyfillPath("node-part")}";
+            import { propertyParts } from "${ponyfillPath("property-part")}";
+            import { tokenListParts } from "${ponyfillPath("token-list-part")}";
+            import { viewParts } from "${ponyfillPath("view-part")}";
+            import { signals } from "${ponyfillPath("signals")}";
+            import { domScheduler } from "${ponyfillPath("dom-scheduler")}";
+            export const template = declarativeTemplate({
+                ponyfills: [
+                    nodeParts(),
+                    attributeParts(),
+                    childNodeParts(),
+                    propertyParts(),
+                    eventParts(),
+                    tokenListParts(),
+                    viewParts(),
+                    signals(),
+                    domScheduler(),
+                ],
+            });
+        `,
     },
 ];
 
@@ -157,6 +187,23 @@ export { ${exportName} };
     return measureBuffer(code);
 }
 
+async function measureConfiguration(contents) {
+    const result = await build({
+        stdin: {
+            contents,
+            resolveDir: packageRoot,
+            loader: "ts",
+        },
+        bundle: true,
+        minify: true,
+        format: "esm",
+        write: false,
+        treeShaking: true,
+    });
+
+    return measureBuffer(Buffer.from(result.outputFiles[0].contents));
+}
+
 async function measureCore() {
     const coreBundle = path.resolve(packageRoot, "dist/fast-element.min.js");
     const buffer = readFileSync(coreBundle);
@@ -189,6 +236,14 @@ async function main() {
         ),
     );
     results.push(...measuredResults);
+
+    const configurationResults = await Promise.all(
+        measuredConfigurations.map(async ({ name, contents }) => ({
+            name,
+            ...(await measureConfiguration(contents)),
+        })),
+    );
+    results.push(...configurationResults);
 
     // Generate markdown table
     const lines = [

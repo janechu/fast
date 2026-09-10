@@ -33,6 +33,24 @@ publisher on demand. It parses declarative template markup at runtime and
 returns a `ViewTemplate` to the waiting FAST element definition through the
 registry-aware declarative template bridge.
 
+Declarative rendering is assembled from explicit, side-effect-free platform
+capability ponyfills:
+
+```ts
+import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
+
+const ponyfills = [declarativeParts(), signals(), domScheduler()];
+```
+
+DOM Parts proposal primitives are also independently importable from
+`part.js`, `node-part.js`, `attribute-part.js`, `child-node-part.js`, and
+`part-group.js`. FAST-specific property, event, token-list, and nested-view
+parts have separate paths so their cost and standards suitability can be
+evaluated independently.
+
 ```html
 <!-- Declarative template — stack-agnostic, no JS needed to render -->
 <my-component greeting="Hello">
@@ -65,7 +83,7 @@ registry-aware declarative template bridge.
 ### `<f-template>` — the internal template publisher
 
 `<f-template>` is an internal custom element implemented as a lightweight native
-`HTMLElement`. It is defined automatically by `declarativeTemplate()` in the same
+`HTMLElement`. It is defined automatically by `declarativeTemplate({ ponyfills })` in the same
 `CustomElementRegistry` as the FAST element definition. Consumers should not
 import, subclass, or define the implementation directly.
 
@@ -75,7 +93,8 @@ When connected to the DOM it:
    `name` attribute.
 2. Publishes a template when a matching FAST element definition requests one.
 3. Delegates parsing of the inner `<template>` tag to `TemplateParser`, which
-   converts declarative bindings into FAST `ViewTemplate` strings and values.
+   interprets declarative bindings and compiles them over the configured
+   low-level DOM parts.
 4. Runs definition-scoped schema transforms, such as `attributeMap()` and
    `observerMap()`, before returning the concrete `ViewTemplate`.
 
@@ -86,8 +105,10 @@ definition template.
 
 ### `TemplateParser` — declarative HTML parser
 
-A standalone class that converts declarative HTML template markup into the
-`strings` and `values` arrays that `ViewTemplate.create()` consumes. It is used
+A standalone class that converts declarative HTML template markup into
+interpreted strings and values. The internal declarative compiler converts
+those values into part-backed binding behaviors using only the configured
+capabilities. It is used
 by the internal `<f-template>` publisher but can also be used independently for
 programmatic template compilation. The parsing pipeline is fully synchronous —
 no promises are allocated during template resolution. A `StringsAccumulator`
@@ -108,7 +129,7 @@ by code and constructs a JSON Schema-compatible data structure. This schema:
 - Uses an instance-level `schemaMap` for its own property schemas.
 - Registers itself in the module-level `schemaRegistry` (keyed by custom element name) for cross-element `$ref` resolution.
 
-`FASTElementDefinition.schema` is optional. `declarativeTemplate()` assigns it
+`FASTElementDefinition.schema` is optional. `declarativeTemplate({ ponyfills })` assigns it
 automatically after parsing; manual schema users can pass `schema` in the
 definition object.
 
@@ -136,7 +157,7 @@ granularity:
 MyElement.define(
     {
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({ ponyfills }),
     },
     [
         observerMap({
@@ -246,14 +267,34 @@ packages/fast-element/
 │       ├── index.ts           # Public declarative entrypoint implementation
 │       ├── interfaces.ts      # Message enum (error codes)
 │       ├── debug.ts           # Human-readable declarative debug messages
-│       ├── template.ts        # declarativeTemplate(), internal <f-template> publisher, lifecycle orchestration
+│       ├── template.ts        # declarativeTemplate({ ponyfills }), internal <f-template> publisher, lifecycle orchestration
 │       ├── template-bridge.ts # Registry/name bridge between definitions and publishers
-│       ├── template-parser.ts # TemplateParser — converts declarative HTML to ViewTemplate strings/values
+│       ├── template-parser.ts # Converts declarative HTML to interpreted strings/values
+│       ├── template-compiler.ts # Thin FAST compiler over low-level parts
+│       ├── part-binding-directive.ts # Binding lifecycle and part selection
+│       ├── ponyfills.ts       # Capability and group contracts
 │       ├── observer-map.ts    # observerMap() implementation
 │       ├── attribute-map.ts   # attributeMap() implementation
 │       ├── observer-map-utilities.ts # Shared observer-map helpers
 │       ├── utilities.ts       # Declarative parsing helpers
 │       └── syntax.ts          # Syntax delimiter constants
+│   └── ponyfills/
+│       ├── part.ts            # Staged Part contract
+│       ├── node-part.ts       # Proposal-aligned single-node primitive
+│       ├── attribute-part.ts  # Proposal-aligned attribute primitive
+│       ├── child-node-part.ts # Proposal-aligned child-range primitive
+│       ├── part-group.ts      # Proposal-aligned grouped commit
+│       ├── property-part.ts   # FAST property extension
+│       ├── event-part.ts      # FAST event extension
+│       ├── token-list-part.ts # FAST DOMTokenList extension
+│       ├── view-part.ts       # FAST nested-view extension
+│       ├── dom-parts.ts       # Proposal-only aggregate and re-exports
+│       ├── declarative-parts.ts # Proposal parts plus FAST extensions
+│       ├── signal-state.ts    # Writable signal primitive
+│       ├── signal-computed.ts # Computed signal primitive
+│       ├── signal-effect.ts   # Target-owned effect primitive
+│       ├── signals.ts         # Dependency tracking adapter
+│       └── dom-scheduler.ts   # Tree-aware effect scheduler
 ├── scripts/
 │   └── declarative/           # Fixture build + webui integration scripts
 └── test/
@@ -262,7 +303,7 @@ packages/fast-element/
 
 ### Module dependency direction
 
-The default `declarativeTemplate()` path avoids importing optional map
+The default `declarativeTemplate({ ponyfills })` path avoids importing optional map
 implementations. Map helpers attach schema transforms to the definition only
 when the consumer passes them as define extensions.
 
@@ -315,7 +356,7 @@ Primary declarative exports intended for application code:
 
 | Export | Purpose |
 |---|---|
-| `declarativeTemplate()` | `@microsoft/fast-element/declarative.js` template resolver for subclass `define()` calls; auto-defines the internal `<f-template>` publisher and waits for the matching template. |
+| `declarativeTemplate({ ponyfills })` | `@microsoft/fast-element/declarative.js` template resolver for subclass `define()` calls; auto-defines the internal `<f-template>` publisher and waits for the matching template. |
 | `TemplateParser` | `@microsoft/fast-element/declarative.js` standalone parser that converts declarative HTML into `ViewTemplate` strings/values. Can be used independently of `<f-template>` for programmatic template compilation. |
 | `Schema` | `@microsoft/fast-element/schema.js` JSON schema builder that records binding paths discovered during template parsing. Each instance owns its own schema map and registers itself in the `schemaRegistry` for cross-element `$ref` resolution. |
 | `schemaRegistry` | `@microsoft/fast-element/schema.js` module-level `Map<string, Map<string, JSONSchema>>` that indexes schemas by custom element name. Used for cross-element lookups (e.g. nested component `$ref` resolution). |
@@ -330,7 +371,7 @@ Primary map extension exports:
 The implementation element class (`<f-template>`), `TemplateElement.config()`,
 `TemplateElement.options()`, `ElementOptions*`, and
 `HydrationLifecycleCallbacks` are not exported from the public declarative
-entrypoint. Use `declarativeTemplate()`, `attributeMap()`, `observerMap()`, and
+entrypoint. Use `declarativeTemplate({ ponyfills })`, `attributeMap()`, `observerMap()`, and
 `enableHydration()` instead. The `AttributeMap` and `ObserverMap` implementation
 classes are available for advanced scenarios, but application code should
 normally use the extension factories.
@@ -389,8 +430,8 @@ using f-template with binding expressions"] --> B["Server renders hydratable HTM
 with fe:b comments and data-fe attributes"]
     B --> C[Browser loads JS bundle]
     C --> D["MyElement.define called
-with template: declarativeTemplate()"]
-    D --> E["declarativeTemplate() defines internal f-template
+with template: declarativeTemplate({ ponyfills })"]
+    D --> E["declarativeTemplate({ ponyfills }) defines internal f-template
 in the target registry"]
     E --> F["f-template connects to DOM
 → registers publisher with bridge"]
@@ -401,7 +442,7 @@ via registry + name bridge"]
 builds Schema, strings, values"]
     I --> J["Run definition schema transforms
 attributeMap before observerMap"]
-    J --> K["ViewTemplate.create(strings, values)
+    J --> K["compileDeclarativeTemplate(strings, values, runtime)
 returned to definition"]
     K --> L["FASTElementDefinition.define
 registers element with platform"]
@@ -433,11 +474,11 @@ transforms:
   schema-transform execution. It is a native `HTMLElement`, not a `FASTElement`.
 - **`TemplateParser`** (`template-parser.ts`) — Synchronous template parser:
   converts declarative HTML into `strings`/`values` arrays for
-  `ViewTemplate.create()`. Uses a `StringsAccumulator` to track the running
+  `compileDeclarativeTemplate()`. Uses a `StringsAccumulator` to track the running
   previous-string in O(1) per binding site instead of O(N) `join("")` calls.
   Independently testable without DOM.
 - **Schema transforms** (`definition-options.ts`) — Extension-provided callbacks run
-  after parsing and before `ViewTemplate.create()`. `attributeMap()` runs before
+  after parsing and before `compileDeclarativeTemplate()`. `attributeMap()` runs before
   `observerMap()`.
 
 ```mermaid
@@ -622,7 +663,7 @@ sequenceDiagram
     participant Hydration as enableHydration().whenHydrated()
 
     App->>Hydration: const hydration = enableHydration() [optional]
-    App->>FER: MyElement.define({name:'my-el', template: declarativeTemplate()}, [attributeMap(), observerMap()])
+    App->>FER: MyElement.define({name:'my-el', template: declarativeTemplate({ ponyfills })}, [attributeMap(), observerMap()])
     note over FER: definition composed; resolver waits for template
 
     DOM->>FTE: f-template connected to DOM
@@ -663,17 +704,17 @@ For usage examples see
 ## Integration with fast-element
 
 The declarative runtime is a thin orchestration layer on top of
-`@microsoft/fast-element`. It does not re-implement any reactive primitives; it
-converts declarative HTML syntax into the same data structures that `html`
-tagged templates produce.
+`@microsoft/fast-element`. It converts declarative HTML syntax into an
+interpreted representation consumed by the declarative-only compiler, then
+routes reactivity and DOM writes through explicitly configured ponyfills.
 
 | fast-element primitive | How the declarative runtime uses it |
 |---|---|
 | `FASTElement` | Base class for user components; the internal `<f-template>` publisher is a native `HTMLElement` |
 | `FASTElementDefinition.register()` / template resolvers | Deferred element registration — element waits for its template |
-| `FASTElementDefinition.schema` | Optional schema used by schema-driven extensions; assigned automatically by `declarativeTemplate()` and available for manual schemas |
+| `FASTElementDefinition.schema` | Optional schema used by schema-driven extensions; assigned automatically by `declarativeTemplate({ ponyfills })` and available for manual schemas |
 | `FASTElementExtension` | Extension callback mechanism used by `attributeMap()` and `observerMap()` to attach schema transforms before template resolution or consume manually supplied schemas |
-| `ViewTemplate.create(strings, values)` | Compiles the resolved strings/values arrays into a `ViewTemplate` |
+| `compileDeclarativeTemplate(strings, values, runtime)` | Compiles the resolved strings/values arrays into a `ViewTemplate` |
 | `ElementController` | Automatically detects prerendered content (`isPrerendered`) and hydrates server-rendered DOM using `fe-b` comment/dataset markers via `template.hydrate()` |
 | `Observable.defineProperty()` | Defines observable root properties on element prototypes (ObserverMap) |
 | `Observable.getNotifier()` | Triggers change notifications from proxy handlers |
@@ -685,7 +726,7 @@ tagged templates produce.
 
 ### Deferred template attachment via define
 
-Standard subclass `define()` calls return a `Promise` that resolves immediately when a concrete template is provided at definition time. When `template: declarativeTemplate()` is used, the `Promise` resolves after the matching `<f-template>` supplies a concrete template through the bridge. This unified API replaces the previous `defineAsync()` / `composeAsync()` methods.
+Standard subclass `define()` calls return a `Promise` that resolves immediately when a concrete template is provided at definition time. When `template: declarativeTemplate({ ponyfills })` is used, the `Promise` resolves after the matching `<f-template>` supplies a concrete template through the bridge. This unified API replaces the previous `defineAsync()` / `composeAsync()` methods.
 
 ---
 
@@ -697,7 +738,7 @@ When declarative templates are used, the server must render:
 2. A `<template shadowrootmode="open">` containing pre-rendered HTML annotated with FAST's hydration markers.
 3. An `<f-template>` element somewhere in the page that carries the template definition.
 
-With `declarativeTemplate()`, connection gating happens before platform registration: the resolver waits for the matching `<f-template>` and keeps the definition concrete before elements can connect. Hydration can therefore start immediately when `ElementController.connect()` runs. The `defer-hydration` and `needs-hydration` attributes are no longer needed in server-rendered markup.
+With `declarativeTemplate({ ponyfills })`, connection gating happens before platform registration: the resolver waits for the matching `<f-template>` and keeps the definition concrete before elements can connect. Hydration can therefore start immediately when `ElementController.connect()` runs. The `defer-hydration` and `needs-hydration` attributes are no longer needed in server-rendered markup.
 
 ### Hydration marker formats
 
@@ -738,7 +779,7 @@ test/declarative/fixtures/<feature>/
 ├── entry.html               # Entry template with root custom elements
 ├── fast-build.config.json   # Build configuration for @microsoft/fast-build
 ├── index.html               # Pre-rendered page (GENERATED by scripts/declarative/build-fixtures.js — do not edit)
-├── main.ts                  # Component definitions, declarativeTemplate(), extensions, and enableHydration() setup
+├── main.ts                  # Component definitions, declarativeTemplate({ ponyfills }), extensions, and enableHydration() setup
 ├── state.json               # Initial state for server-side rendering
 └── templates.html           # Declarative <f-template> definitions
 ```

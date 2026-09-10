@@ -8,6 +8,11 @@ import type { Constructable } from "../interfaces.js";
 import { FAST } from "../platform.js";
 import type { ElementViewTemplate } from "../templating/template.js";
 import { Message } from "./interfaces.js";
+import {
+    composeDeclarativePonyfills,
+    type DeclarativePonyfillRuntime,
+    type DeclarativeTemplateOptions,
+} from "./ponyfills.js";
 import { ensureDeclarativeRuntime } from "./runtime.js";
 import { declarativeTemplateBridge, type TemplatePublisher } from "./template-bridge.js";
 import { TemplateParser } from "./template-parser.js";
@@ -72,12 +77,13 @@ async function ensureTemplateElementDefined(
  */
 export function declarativeTemplate<
     TType extends Constructable<HTMLElement> = Constructable<HTMLElement>,
->(): FASTElementTemplateResolver<TType> {
+>(options: DeclarativeTemplateOptions): FASTElementTemplateResolver<TType> {
     ensureDeclarativeRuntime();
+    const runtime = composeDeclarativePonyfills(options);
 
     return async definition => {
         await ensureTemplateElementDefined(definition.registry);
-        return declarativeTemplateBridge.requestTemplate(definition);
+        return declarativeTemplateBridge.requestTemplate(definition, runtime);
     };
 }
 
@@ -126,7 +132,10 @@ class FTemplateElement extends HTMLElement implements TemplatePublisher {
         );
     }
 
-    public publishTemplate(definition: FASTElementDefinition): ElementViewTemplate {
+    public publishTemplate(
+        definition: FASTElementDefinition,
+        runtime: DeclarativePonyfillRuntime,
+    ): ElementViewTemplate {
         ensureDeclarativeRuntime();
 
         const name = definition.name;
@@ -147,7 +156,7 @@ class FTemplateElement extends HTMLElement implements TemplatePublisher {
         const schema = definition.schema ?? new Schema(name);
         definition.schema = schema;
         const innerHTML = transformInnerHTML(escapeBracesInCodeElements(this.innerHTML));
-        const parser = new TemplateParser();
+        const parser = new TemplateParser(runtime);
         const { strings, values } = parser.parse(innerHTML, schema);
 
         for (const transform of getDefinitionSchemaTransforms(definition)) {

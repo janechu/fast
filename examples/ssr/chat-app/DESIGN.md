@@ -77,9 +77,9 @@ matching `<f-template>` definitions can resolve through `declarativeTemplate()`:
 - `chat-app`
 
 Each class extends `FASTElement` and calls the subclass static `define()` with
-`template: declarativeTemplate()` and `observerMap()`, so its rendered shadow
-root is hydrated against the matching `<f-template name="...">` in
-`templates.html`.
+`template: declarativeTemplate({ ponyfills })` and `observerMap()`, so its
+rendered shadow root is hydrated against the matching
+`<f-template name="...">` in `templates.html`.
 
 ### Conversation model
 

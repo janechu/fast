@@ -5,6 +5,9 @@ import { FASTElement } from "@microsoft/fast-element/fast-element.js";
 import { enableHydration } from "@microsoft/fast-element/hydration.js";
 import { observable } from "@microsoft/fast-element/observable.js";
 import { observerMap } from "@microsoft/fast-element/observer-map.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 export class TestElement extends FASTElement {
     @observable
@@ -15,7 +18,9 @@ export class TestElement extends FASTElement {
 }
 TestElement.define({
     name: "test-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 export class TestElementInnerWhen extends FASTElement {
@@ -33,7 +38,9 @@ export class TestElementInnerWhen extends FASTElement {
 }
 TestElementInnerWhen.define({
     name: "test-element-inner-when",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 export class TestElementIntervalUpdates extends FASTElement {
@@ -50,7 +57,9 @@ export class TestElementIntervalUpdates extends FASTElement {
 TestElementIntervalUpdates.define(
     {
         name: "test-element-interval-updates",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -61,7 +70,9 @@ export class TestElementNoItemRepeatBinding extends FASTElement {
 }
 TestElementNoItemRepeatBinding.define({
     name: "test-element-no-item-repeat-binding",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 export class TestElementEmptyArray extends FASTElement {
@@ -70,7 +81,9 @@ export class TestElementEmptyArray extends FASTElement {
 }
 TestElementEmptyArray.define({
     name: "test-element-empty-array",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 export class TestElementEvent extends FASTElement {
@@ -86,7 +99,9 @@ export class TestElementEvent extends FASTElement {
 }
 TestElementEvent.define({
     name: "test-element-event",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 export class TestElementWithObserverMap extends FASTElement {
@@ -98,7 +113,9 @@ export class TestElementWithObserverMap extends FASTElement {
 TestElementWithObserverMap.define(
     {
         name: "test-element-with-observer-map",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );

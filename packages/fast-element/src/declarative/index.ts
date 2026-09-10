@@ -48,14 +48,28 @@ export type {
     ViewBehavior,
     ViewBehaviorFactory,
 } from "../templating/html-directive.js";
-export {
-    type CaptureType,
-    type ElementViewTemplate,
-    type HTMLTemplateCompilationResult,
-    type SyntheticViewTemplate,
-    type TemplateValue,
+export type {
+    CaptureType,
+    ElementViewTemplate,
+    HTMLTemplateCompilationResult,
+    SyntheticViewTemplate,
     ViewTemplate,
 } from "../templating/template.js";
-export { type ElementView, HTMLView } from "../templating/view.js";
+export type { ElementView } from "../templating/view.js";
+export type {
+    DeclarativeAttributePartPonyfill,
+    DeclarativeChildNodePartPonyfill,
+    DeclarativeDOMSchedulerPonyfill,
+    DeclarativeEventPartPonyfill,
+    DeclarativeNodePartPonyfill,
+    DeclarativePonyfill,
+    DeclarativePonyfillGroup,
+    DeclarativePonyfillRuntime,
+    DeclarativePropertyPartPonyfill,
+    DeclarativeSignalsPonyfill,
+    DeclarativeTemplateOptions,
+    DeclarativeTokenListPartPonyfill,
+    DeclarativeViewPartPonyfill,
+} from "./ponyfills.js";
 export { declarativeTemplate } from "./template.js";
 export { type ResolvedStringsAndValues, TemplateParser } from "./template-parser.js";

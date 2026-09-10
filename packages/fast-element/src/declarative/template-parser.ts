@@ -4,9 +4,10 @@ import { elements } from "../templating/node-observation.js";
 import { ref } from "../templating/ref.js";
 import { repeat } from "../templating/repeat.js";
 import { slotted } from "../templating/slotted.js";
-import { ViewTemplate } from "../templating/template.js";
+import type { ViewTemplate } from "../templating/template.js";
 import { when } from "../templating/when.js";
-import { ensureDeclarativeRuntime } from "./runtime.js";
+import type { DeclarativePonyfillRuntime } from "./ponyfills.js";
+import { compileDeclarativeTemplate } from "./template-compiler.js";
 import {
     type AttributeDirective,
     type AttributeDirectiveBindingBehaviorConfig,
@@ -70,7 +71,7 @@ class StringsAccumulator {
 
 /**
  * Converts declarative HTML template markup into the `strings` and `values`
- * arrays that `ViewTemplate.create()` consumes.
+ * arrays consumed by the low-level part-backed declarative compiler.
  *
  * This class is intentionally stateless across invocations — all mutable
  * parsing state lives on the call stack or in the `TemplateResolutionContext`.
@@ -80,6 +81,8 @@ class StringsAccumulator {
  * @public
  */
 export class TemplateParser {
+    public constructor(private readonly runtime: DeclarativePonyfillRuntime) {}
+
     /**
      * Parse declarative HTML into strings and values for ViewTemplate creation.
      * @param innerHTML - The transformed innerHTML to parse.
@@ -103,8 +106,7 @@ export class TemplateParser {
         strings: Array<string>,
         values: Array<any>,
     ): ViewTemplate<any, any> {
-        ensureDeclarativeRuntime();
-        return ViewTemplate.create(strings, values);
+        return compileDeclarativeTemplate(strings, values, this.runtime);
     }
 
     /**
@@ -211,7 +213,13 @@ export class TemplateParser {
                 );
 
                 externalValues.push(
-                    repeat((x, c) => binding(x, c), this.createTemplate(strings, values)),
+                    repeat(
+                        this.runtime.signals.binding(
+                            (x, c) => binding(x, c),
+                            this.runtime.scheduler,
+                        ),
+                        this.createTemplate(strings, values),
+                    ),
                 );
 
                 break;

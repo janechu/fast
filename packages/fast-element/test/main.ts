@@ -52,7 +52,6 @@ export { volatile } from "../src/observation/volatile.js";
 export { css } from "../src/styles/css.js";
 export { ElementStyles } from "../src/styles/element-styles.js";
 export { ref } from "../src/templating/ref.js";
-export { html } from "../src/templating/template.js";
 export { Fake } from "../src/testing/fakes.js";
 export { uniqueElementName } from "../src/testing/fixture.js";
 export { ChildModel, DerivedModel, Model } from "../src/testing/models.js";
@@ -91,14 +90,6 @@ export { HTMLBindingDirective } from "../src/templating/html-binding-directive.j
 export { HTMLDirective, htmlDirective } from "../src/templating/html-directive.js";
 export { Markup, nextId, Parser } from "../src/templating/markup.js";
 export { elements } from "../src/templating/node-observation.js";
-export {
-    NodeTemplate,
-    RenderBehavior,
-    RenderDirective,
-    RenderInstruction,
-    render,
-    renderWith,
-} from "../src/templating/render.js";
 export { RepeatBehavior, RepeatDirective, repeat } from "../src/templating/repeat.js";
 export { SlottedDirective, slotted } from "../src/templating/slotted.js";
 export { ViewTemplate } from "../src/templating/template.js";
@@ -113,3 +104,15 @@ export function removeWhitespace(str: string): string {
         .map(s => s.trim())
         .join("");
 }
+
+import { declarativeParts } from "../src/ponyfills/declarative-parts.js";
+import { domScheduler } from "../src/ponyfills/dom-scheduler.js";
+import { signals } from "../src/ponyfills/signals.js";
+
+Object.assign(globalThis, {
+    declarativeParts,
+    domScheduler,
+    signals,
+});
+
+export { declarativeParts, domScheduler, signals };

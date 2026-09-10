@@ -42,10 +42,6 @@
       "types": "./dist/dts/binding/exports.d.ts",
       "default": "./dist/esm/binding/exports.js"
     },
-    "./children.js": {
-      "types": "./dist/dts/templating/children.d.ts",
-      "default": "./dist/esm/templating/children.js"
-    },
     "./context.js": {
       "types": "./dist/dts/context.d.ts",
       "default": "./dist/esm/context.js"
@@ -82,10 +78,6 @@
       "types": "./dist/dts/components/fast-element.d.ts",
       "default": "./dist/esm/components/fast-element.js"
     },
-    "./html.js": {
-      "types": "./dist/dts/templating/html.d.ts",
-      "default": "./dist/esm/templating/html.js"
-    },
     "./hydration.js": {
       "types": "./dist/dts/hydration/exports.d.ts",
       "default": "./dist/esm/hydration/exports.js"
@@ -102,21 +94,73 @@
       "types": "./dist/dts/declarative/observer-map.d.ts",
       "default": "./dist/esm/declarative/observer-map.js"
     },
-    "./ref.js": {
-      "types": "./dist/dts/templating/ref.d.ts",
-      "default": "./dist/esm/templating/ref.js"
-    },
     "./registry.js": {
       "types": "./dist/dts/registry.d.ts",
       "default": "./dist/esm/registry.js"
     },
-    "./render.js": {
-      "types": "./dist/dts/render.d.ts",
-      "default": "./dist/esm/render.js"
+    "./ponyfills/attribute-part.js": {
+      "types": "./dist/dts/ponyfills/attribute-part.d.ts",
+      "default": "./dist/esm/ponyfills/attribute-part.js"
     },
-    "./repeat.js": {
-      "types": "./dist/dts/templating/repeat.d.ts",
-      "default": "./dist/esm/templating/repeat.js"
+    "./ponyfills/child-node-part.js": {
+      "types": "./dist/dts/ponyfills/child-node-part.d.ts",
+      "default": "./dist/esm/ponyfills/child-node-part.js"
+    },
+    "./ponyfills/dom-parts.js": {
+      "types": "./dist/dts/ponyfills/dom-parts.d.ts",
+      "default": "./dist/esm/ponyfills/dom-parts.js"
+    },
+    "./ponyfills/declarative-parts.js": {
+      "types": "./dist/dts/ponyfills/declarative-parts.d.ts",
+      "default": "./dist/esm/ponyfills/declarative-parts.js"
+    },
+    "./ponyfills/dom-scheduler.js": {
+      "types": "./dist/dts/ponyfills/dom-scheduler.d.ts",
+      "default": "./dist/esm/ponyfills/dom-scheduler.js"
+    },
+    "./ponyfills/event-part.js": {
+      "types": "./dist/dts/ponyfills/event-part.d.ts",
+      "default": "./dist/esm/ponyfills/event-part.js"
+    },
+    "./ponyfills/node-part.js": {
+      "types": "./dist/dts/ponyfills/node-part.d.ts",
+      "default": "./dist/esm/ponyfills/node-part.js"
+    },
+    "./ponyfills/part-group.js": {
+      "types": "./dist/dts/ponyfills/part-group.d.ts",
+      "default": "./dist/esm/ponyfills/part-group.js"
+    },
+    "./ponyfills/part.js": {
+      "types": "./dist/dts/ponyfills/part.d.ts",
+      "default": "./dist/esm/ponyfills/part.js"
+    },
+    "./ponyfills/property-part.js": {
+      "types": "./dist/dts/ponyfills/property-part.d.ts",
+      "default": "./dist/esm/ponyfills/property-part.js"
+    },
+    "./ponyfills/signals.js": {
+      "types": "./dist/dts/ponyfills/signals.d.ts",
+      "default": "./dist/esm/ponyfills/signals.js"
+    },
+    "./ponyfills/signal-computed.js": {
+      "types": "./dist/dts/ponyfills/signal-computed.d.ts",
+      "default": "./dist/esm/ponyfills/signal-computed.js"
+    },
+    "./ponyfills/signal-effect.js": {
+      "types": "./dist/dts/ponyfills/signal-effect.d.ts",
+      "default": "./dist/esm/ponyfills/signal-effect.js"
+    },
+    "./ponyfills/signal-state.js": {
+      "types": "./dist/dts/ponyfills/signal-state.d.ts",
+      "default": "./dist/esm/ponyfills/signal-state.js"
+    },
+    "./ponyfills/token-list-part.js": {
+      "types": "./dist/dts/ponyfills/token-list-part.d.ts",
+      "default": "./dist/esm/ponyfills/token-list-part.js"
+    },
+    "./ponyfills/view-part.js": {
+      "types": "./dist/dts/ponyfills/view-part.d.ts",
+      "default": "./dist/esm/ponyfills/view-part.js"
     },
     "./schema.js": {
       "types": "./dist/dts/schema.d.ts",
@@ -125,10 +169,6 @@
     "./signal.js": {
       "types": "./dist/dts/binding/signal.d.ts",
       "default": "./dist/esm/binding/signal.js"
-    },
-    "./slotted.js": {
-      "types": "./dist/dts/templating/slotted.d.ts",
-      "default": "./dist/esm/templating/slotted.js"
     },
     "./state.js": {
       "types": "./dist/dts/state/exports.d.ts",
@@ -149,10 +189,6 @@
     "./volatile.js": {
       "types": "./dist/dts/observation/volatile.d.ts",
       "default": "./dist/esm/observation/volatile.js"
-    },
-    "./when.js": {
-      "types": "./dist/dts/templating/when.d.ts",
-      "default": "./dist/esm/templating/when.js"
     },
     "./package.json": "./package.json"
   },

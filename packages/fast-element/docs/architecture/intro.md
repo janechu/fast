@@ -12,5 +12,7 @@ targets for the FAST Element client runtime.
 
 - [Overview](./overview.md): How the `@microsoft/fast-element` should be used by a developer and what code is executed during the first render.
 - [`FASTElement`](./fastelement.md): How the `FASTElement` is architected.
-- [`html` tagged template literal](./html-tagged-template-literal.md): How the `html` tagged template literal takes and converts the contents into a `ViewTemplate`.
+- [Declarative HTML](../declarative/design.md): How authored `<f-template>`
+  markup is interpreted, composed with ponyfills, and converted into a
+  `ViewTemplate`.
 - [`Updates` queue](./updates.md): How updates to attributes and observables are processed.

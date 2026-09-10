@@ -15,7 +15,7 @@ For deep dives into specific areas, see the linked detailed documents.
    - [Observables & Notifiers](#observables--notifiers)
    - [Bindings](#bindings)
    - [DOM Policy](#dom-policy)
-   - [html Tagged Template Literal](#html-tagged-template-literal)
+   - [Declarative Template Compilation](#declarative-template-compilation)
    - [ViewTemplate & Compiler](#viewtemplate--compiler)
    - [Views & Behaviors](#views--behaviors)
    - [Updates Queue](#updates-queue)
@@ -42,8 +42,8 @@ For deep dives into specific areas, see the linked detailed documents.
 |---|---|
 | Element authoring | `FASTElement` base class + `@customElement`, `@attr`, `@observable` decorators |
 | Reactive data binding | `Observable`, `ExpressionNotifier`, `oneWay`/`oneTime`/`listener` bindings |
-| Declarative templating | `html` tagged template literal → `ViewTemplate` → compiled `HTMLView` |
-| Declarative HTML runtime | `@microsoft/fast-element/declarative.js` → `declarativeTemplate()`, `TemplateParser`; `@microsoft/fast-element/schema.js` → `Schema` |
+| Declarative templating | Authored `<f-template>` markup → configured ponyfills → `ViewTemplate` → compiled `HTMLView` |
+| Declarative HTML runtime | `@microsoft/fast-element/declarative.js` → `declarativeTemplate()`, `TemplateParser`; focused ponyfill paths supply DOM parts, signals, and scheduling |
 | Schema-driven extensions | `@microsoft/fast-element/attribute-map.js` and `@microsoft/fast-element/observer-map.js` → map helpers usable with declarative or manually supplied schemas |
 | Async DOM updates | `Updates` queue (batched with `requestAnimationFrame`) |
 | Scoped styles | `css` tagged template literal → `ElementStyles` → `adoptedStylesheets` / `<style>` |
@@ -106,9 +106,9 @@ The previous `FAST.getById()` slot registry, `FASTGlobal` type, and `KernelServi
   - **Prerendered**: The hydration hook (installed by `enableHydration()`) registers the element in the active `HydrationTracker`, swaps `onAttributeChangedCallback` to a no-op so the upgrade-time burst of callbacks is discarded, hydrates the existing DOM via `template.hydrate()`, then restores the standard handler and removes the element from the tracker. The entire method is wrapped in `try/finally` to guarantee cleanup even if an error occurs during hydration. After this point, all future attribute changes flow through the real handler with zero overhead.
   - **Client-side**: `renderClientSide()` clones the compiled fragment, binds, and appends to the host — the standard path with no prerender logic.
 - During hydration, server-rendered markup is treated as an optimisation over the
-  client template rather than as a source of blank output. If a `render()`
-  directive has an expected binding target but no SSR view boundaries, it creates
-  and binds the client view at the hydrated location. A content binding removes
+  client template rather than as a source of blank output. If a structural
+  binding has an expected target but no server-rendered view boundaries, it
+  creates and binds the client view at the hydrated location. A content binding removes
   an SSR structural range when its initial client value has no template, preventing
   later updates from composing beside stale DOM. `repeat()` hydrates the overlapping
   SSR/client item ranges, creates client views for missing SSR ranges, and removes
@@ -270,34 +270,21 @@ protocol-relative URLs as unsafe.
 
 ---
 
-### html Tagged Template Literal
+### Declarative Template Compilation
 
-**File**: `src/templating/template.ts`
+**Files**: `src/declarative/template-parser.ts`,
+`src/declarative/template-compiler.ts`, `src/templating/template.ts`
 
-The `html` tag is the primary authoring API:
+`declarativeTemplate({ ponyfills })` resolves authored `<f-template>` markup and
+requires explicitly composed capabilities. `TemplateParser` interprets the
+declarative binding syntax, and `compileDeclarativeTemplate()` creates a
+`ViewTemplate` with part-backed behavior factories. The package does not expose
+the imperative `html` tagged-template construction path.
 
-```typescript
-const template = html<MyElement>`
-  <div>${x => x.label}</div>
-  <button @click="${x => x.handleClick}">OK</button>
-`;
-```
-
-When the tag function is called it invokes `ViewTemplate.create(strings, values)` (static method) which:
-
-1. Iterates the template string fragments (`strings`) paired with interpolated values.
-2. For each value:
-   - A plain function → wrapped in `HTMLBindingDirective(oneWay(fn))`
-   - A `Binding` instance → wrapped in `HTMLBindingDirective(binding)`
-   - A registered `HTMLDirective` instance → used directly
-   - Anything else → wrapped as a `oneTime` static binding
-3. Calls `directive.createHTML(add)` which returns a **placeholder string** (a special attribute or marker containing the factory's unique ID).
-4. Concatenates all static strings and placeholders into a single HTML string.
-5. Returns a `ViewTemplate(html, factories)` – the factories dictionary maps IDs to `ViewBehaviorFactory` instances.
-
-No DOM nodes are created at this point; compilation is deferred.
-
-See [docs/architecture/html-tagged-template-literal.md](./docs/architecture/html-tagged-template-literal.md) for more detail on directives and the `Markup`/`Parser` helpers.
+Proposal-family DOM parts, signal primitives, and DOM scheduling are available
+through independent ponyfill export paths. FAST-only property, event,
+token-list, and nested-view behavior is isolated from the proposal-aligned
+parts and grouped by `declarativeParts()` for full declarative syntax.
 
 ---
 
@@ -305,7 +292,8 @@ See [docs/architecture/html-tagged-template-literal.md](./docs/architecture/html
 
 **Files**: `src/templating/template.ts`, `src/templating/compiler.ts`, `src/templating/markup.ts`
 
-`ViewTemplate.compile()` is called lazily the first time the template is rendered. It delegates to `Compiler.compile(html, factories, policy)`:
+`ViewTemplate.compile()` is called lazily when the resolved declarative template
+first creates a view. It delegates to `Compiler.compile(html, factories, policy)`:
 
 1. Sets the HTML string as the `innerHTML` of a `<template>` element (letting the browser parse the DOM once).
 2. Traverses the resulting `DocumentFragment` depth-first.
@@ -336,19 +324,14 @@ See [docs/architecture/html-tagged-template-literal.md](./docs/architecture/html
 
 | Directive | Created `ViewBehavior` | Effect |
 |---|---|---|
-| `HTMLBindingDirective` | `BindingBehavior` | Evaluates the binding; updates the DOM aspect (attribute / property / event / content / tokenList) |
-| `when` | `WhenBehavior` | Conditionally inserts a child view |
-| `repeat` | `RepeatBehavior` | Renders a list of child views |
-| `ref` | `RefDirective` | Writes the element reference onto the source |
-| `children` / `slotted` | `ChildrenDirective` / `SlottedDirective` | Observes DOM mutations |
+| `PartBindingDirective` | Configured DOM part | Evaluates the binding and commits the selected DOM aspect |
+| Declarative `when` | `ViewPart` | Conditionally inserts a child view |
+| Declarative `repeat` | `RepeatBehavior` | Renders a list of child views |
+| Declarative `ref` | `RefDirective` | Writes the element reference onto the source |
+| Declarative `children` / `slotted` | `ChildrenDirective` / `SlottedDirective` | Observes DOM mutations |
 
-`ViewBehaviorFactory` (created at template-authoring time) is the blueprint; `ViewBehavior` (created per `HTMLView` instance) is the live runtime object.
-
-The `render` directive in `src/templating/render.ts` uses `RenderInstruction`
-registrations to resolve templates for arbitrary model types. Registrations are
-keyed by model constructor and instruction name. Registering another instruction
-for the same type/name pair intentionally replaces the existing instruction and
-emits a debug warning through `FAST.warn`; production behavior remains unchanged.
+`ViewBehaviorFactory` is the compiled blueprint; `ViewBehavior` is the live
+runtime object created for each `HTMLView` instance.
 
 See [docs/template-bindings.md](./docs/template-bindings.md) for the full binding pipeline including `DOMAspect` routing and two-way binding.
 
@@ -454,16 +437,18 @@ can be used with declarative templates or manually supplied schemas. The
 `declarativeTemplate()` defines in the target registry; it is not part of the
 public API.
 
-The declarative runtime intentionally reuses the same FAST Element primitives as
-the imperative `html` API:
+The declarative runtime uses FAST Element's internal view and compiler
+primitives without exposing imperative template authoring:
 
 - The internal `<f-template>` publisher parses HTML and returns concrete
   `ViewTemplate` instances through the registry-aware declarative template
   bridge. If duplicate connected publishers share a name, the first connected
   publisher supplies the definition template and later duplicates do not
   reassign it.
-- `TemplateParser` lowers declarative syntax to the same `strings` / `values`
-  shape used by `ViewTemplate.create()`.
+- `TemplateParser` lowers declarative syntax to an interpreted strings/values
+  representation consumed only by the declarative compiler.
+- `PartBindingDirective` routes DOM writes through the configured low-level
+  part capabilities.
 - `attributeMap()` and `observerMap()` are `FASTElementExtension` factories
   exported from `@microsoft/fast-element/attribute-map.js` and
   `@microsoft/fast-element/observer-map.js`. With `declarativeTemplate()` they
@@ -492,7 +477,7 @@ flowchart TD
     B --> C[FASTElement subclass executes define]
     C --> D[Observable decorators register accessors on the prototype]
     C --> E[Attribute decorators push AttributeDefinition to the class]
-    C --> F[html tag is evaluated – ViewTemplate created with factories]
+    C --> F[declarativeTemplate resolves f-template and configured ponyfills]
     D & E & F --> G[FASTElement.define registers with the Custom Element Registry]
     G --> H[Browser detects element in DOM]
     H --> I([FASTElement lifecycle begins])
@@ -534,9 +519,9 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    TAG["html\`...\` tag call"]
-    CREATE["ViewTemplate.create() (static)\nBuilds HTML string with\nfactory placeholder IDs\nand factories dictionary"]
-    LAZY["First render call\nViewTemplate.create() / render()"]
+    TAG["Authored <f-template> markup"]
+    CREATE["TemplateParser + declarative compiler\nBuild HTML markers and\npart-backed factories"]
+    LAZY["Element connection or hydration\nrequests a concrete view"]
     COMPILE["ViewTemplate.compile()\n→ Compiler.compile()\nParses <template> innerHTML\nBuilds CompilationContext\nwith node ID descriptors"]
     CLONE["CompilationContext.createView()\nClones DocumentFragment\nInstantiates ViewBehaviors"]
     VIEW["HTMLView\nDOM nodes + behaviors"]
@@ -572,7 +557,9 @@ flowchart TD
     GUARD -->|no| DROP["Notification dropped\n(stale observer)"]
 ```
 
-> **Stale notification guard**: When a view is unbound (e.g., after a parent `when` directive tears down a child element), the coupled source lifetime optimisation may leave expression observers subscribed to the child element's properties. If a property change fires while the view is inactive, `HTMLBindingDirective.handleChange` and `RenderBehavior.handleChange` check `controller.isBound` and skip the update to prevent evaluating expressions against a null source.
+> **Stale notification guard**: When a view is unbound, part-backed binding
+> behaviors check `controller.isBound` and skip updates so stale notifications
+> cannot evaluate expressions against an inactive source.
 
 ---
 
@@ -602,8 +589,8 @@ Below is a conceptual map of the major subsystems and their relationships:
                          │ drives
 ┌────────────────────────▼──────────────────────────────────────┐
 │                  Templating pipeline                            │
-│  html tag → ViewTemplate → Compiler → CompilationContext       │
-│  createView → HTMLView → ViewBehaviors (bind/update DOM)        │
+│  declarative parser → configured parts → ViewTemplate → Compiler│
+│  createView → HTMLView → part-backed behaviors (bind/update DOM)│
 └────────────────────────┬──────────────────────────────────────┘
                          │ owned by
 ┌────────────────────────▼──────────────────────────────────────┐
@@ -659,16 +646,15 @@ src/
 │   ├── one-time.ts        # oneTime
 │   └── normalize.ts       # normalizeBinding helper
 ├── templating/
-│   ├── template.ts        # ViewTemplate, html tag, InlineTemplateDirective
+│   ├── template.ts        # Internal ViewTemplate compilation contract
 │   ├── compiler.ts        # Compiler, CompilationContext
 │   ├── view.ts            # HTMLView, ElementView, SyntheticView
 │   ├── html-directive.ts  # HTMLDirective, ViewBehavior, ViewBehaviorFactory
-│   ├── html-binding-directive.ts  # HTMLBindingDirective
+│   ├── html-binding-directive.ts  # Legacy internal behavior, not publicly exported
 │   ├── markup.ts          # Markup placeholders, Parser
 │   ├── when.ts            # when directive
 │   ├── repeat.ts          # repeat directive
 │   ├── ref.ts             # ref directive
-│   ├── render.ts          # render directive
 │   ├── children.ts        # children directive
 │   └── slotted.ts         # slotted directive
 ├── styles/
@@ -692,12 +678,23 @@ src/
 ├── declarative/
 │   ├── template.ts        # declarativeTemplate() and internal f-template publisher
 │   ├── template-parser.ts # Declarative HTML parser → ViewTemplate strings/values
+│   ├── template-compiler.ts # Declarative-only compiler and binding factory
+│   ├── part-binding-directive.ts # Thin interpreter over configured DOM parts
+│   ├── ponyfills.ts       # Capability contracts and composition
 │   ├── schema.ts          # Compatibility re-export for Schema
 │   ├── definition-options.ts # Compatibility re-export for schema transforms
 │   ├── observer-map.ts    # Internal observer-map extension alias (not a package export)
 │   ├── attribute-map.ts   # Internal attribute-map extension alias (not a package export)
 │   ├── utilities.ts       # Declarative parsing utilities
 │   └── syntax.ts          # Declarative syntax constants
+├── ponyfills/
+│   ├── dom-parts.ts       # Proposal-family aggregate
+│   ├── declarative-parts.ts # DOM parts plus FAST extensions
+│   ├── signal-state.ts    # Writable signal primitive
+│   ├── signal-computed.ts # Computed signal primitive
+│   ├── signal-effect.ts   # Target-owned effect primitive
+│   ├── signals.ts         # FAST binding adapter and signal aggregate
+│   └── dom-scheduler.ts   # Tree-aware effect scheduler
 ├── state/
 │   ├── state.ts           # state() helper (beta)
 │   └── watch.ts           # watch() helper (beta)
@@ -718,9 +715,8 @@ The published export surface is guarded by scripts under `scripts/`.
 | [docs/architecture/intro.md](./docs/architecture/intro.md) | Glossary / index for all architecture docs |
 | [docs/architecture/overview.md](./docs/architecture/overview.md) | General FAST usage, compose/define flow, module load sequence |
 | [docs/architecture/fastelement.md](./docs/architecture/fastelement.md) | FASTElement & ElementController lifecycle in detail |
-| [docs/architecture/html-tagged-template-literal.md](./docs/architecture/html-tagged-template-literal.md) | `html` tag, directives, binding pre-processing |
 | [docs/architecture/updates.md](./docs/architecture/updates.md) | Updates queue, attribute and observable change batching |
-| [docs/declarative/design.md](./docs/declarative/design.md) | Declarative HTML runtime, parser, schema, maps, and fixture architecture |
+| [docs/declarative/design.md](./docs/declarative/design.md) | Declarative HTML runtime, ponyfill composition, parser, compiler, and fixture architecture |
 | [docs/template-bindings.md](./docs/template-bindings.md) | Full template binding pipeline: authoring → compilation → binding → DOM updates |
 | [docs/migration/fast-element-2.md](./docs/migration/fast-element-2.md) | Breaking changes from v1 to v2 |
 

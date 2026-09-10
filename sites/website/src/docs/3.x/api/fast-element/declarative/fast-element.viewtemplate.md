@@ -44,7 +44,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[(constructor)(html, factories, policy)](../fast-element.viewtemplate._constructor_/)
+[(constructor)(html, factories, policy, bindingFactory)](../fast-element.viewtemplate._constructor_/)
 
 
 </td><td>
@@ -154,42 +154,6 @@ Description
 </td><td>
 
 Creates an HTMLView instance based on this template definition.
-
-
-</td></tr>
-<tr><td>
-
-[create(strings, values, policy)](../fast-element.viewtemplate.create/)
-
-
-</td><td>
-
-`static`
-
-
-</td><td>
-
-Processes the tagged template literal's static strings and interpolated values and creates a ViewTemplate.
-
-For each interpolated value: 1. Functions (binding expressions, e.g., `x => x.name`<!-- -->) → wrapped in a one-way HTMLBindingDirective 2. Binding instances → wrapped in an HTMLBindingDirective 3. HTMLDirective instances → used as-is 4. Static values (strings, numbers) → wrapped in a one-time HTMLBindingDirective
-
-Each directive's createHTML() is called with an `add` callback that registers the factory in the factories record under a unique ID and returns that ID. The directive inserts a placeholder marker (e.g., `fast-abc123{0}fast-abc123`<!-- -->) into the HTML string so the compiler can later find and associate it with the factory.
-
-Aspect detection happens here too: the `lastAttributeNameRegex` checks whether the placeholder appears inside an attribute value, and if so, assignAspect() sets the correct DOMAspect (attribute, property, event, etc.) based on the attribute name prefix.
-
-
-</td></tr>
-<tr><td>
-
-[inline()](../fast-element.viewtemplate.inline/)
-
-
-</td><td>
-
-
-</td><td>
-
-Returns a directive that can inline the template.
 
 
 </td></tr>

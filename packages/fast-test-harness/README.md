@@ -129,17 +129,24 @@ setTheme(lightTheme);
 </html>
 ```
 
-**`entry-client.ts`** imports the harness SSR entry (which enables hydration) and registers components. Component definition modules should use `template: declarativeTemplate()`; this automatically defines FAST's internal `<f-template>` publisher.
+**`entry-client.ts`** imports the harness SSR entry (which enables hydration)
+and registers components. Component definition modules must configure the
+declarative ponyfills explicitly.
 
 ```ts
 import "@microsoft/fast-test-harness/ssr/entry-client.js";
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 import { MyButton, definition } from "../../src/button/index.js";
 
 MyButton.define({
     name: definition.name,
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 ```
 

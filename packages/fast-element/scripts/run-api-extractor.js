@@ -23,6 +23,26 @@ export const exportPaths = [
         configPath: path.resolve(__dirname, "../api-extractor.di.json"),
     },
     {
+        path: "./ponyfills/dom-parts.js",
+        docsFolder: "ponyfills/dom-parts",
+        configPath: path.resolve(__dirname, "../api-extractor.dom-parts.json"),
+    },
+    {
+        path: "./ponyfills/declarative-parts.js",
+        docsFolder: "ponyfills/declarative-parts",
+        configPath: path.resolve(__dirname, "../api-extractor.declarative-parts.json"),
+    },
+    {
+        path: "./ponyfills/signals.js",
+        docsFolder: "ponyfills/signals",
+        configPath: path.resolve(__dirname, "../api-extractor.signals.json"),
+    },
+    {
+        path: "./ponyfills/dom-scheduler.js",
+        docsFolder: "ponyfills/dom-scheduler",
+        configPath: path.resolve(__dirname, "../api-extractor.dom-scheduler.json"),
+    },
+    {
         path: "./arrays.js",
         docsFolder: "arrays",
         configPath: path.resolve(__dirname, "../api-extractor.arrays.json"),
@@ -34,7 +54,7 @@ export const exportPaths = [
         const docsFolder = path.resolve(__dirname, `../docs/${exportPath.docsFolder}`);
         // Create folders in the docs directory
         if (!fs.existsSync(docsFolder)) {
-            fs.mkdirSync(docsFolder);
+            fs.mkdirSync(docsFolder, { recursive: true });
         }
 
         // Load and parse the api-extractor.json file

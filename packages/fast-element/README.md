@@ -133,12 +133,17 @@ declarative debug messages. Hydration is separate and remains opt-in through
 ```ts
 import { FASTElement } from "@microsoft/fast-element";
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 class MyElement extends FASTElement {}
 
 MyElement.define({
     name: "my-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 ```
 
@@ -156,11 +161,16 @@ Declarative schema behavior is enabled with define extensions:
 import { attributeMap } from "@microsoft/fast-element/attribute-map.js";
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 import { observerMap } from "@microsoft/fast-element/observer-map.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 MyElement.define(
     {
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [attributeMap(), observerMap()],
 );
@@ -224,14 +234,14 @@ This enables several optimizations:
   matching `<f-template>` before `define()` completes, so connected elements
   hydrate with a concrete template.
 - **Attribute skip**: `onAttributeChangedCallback()` skips processing during initial upgrade when the element is prerendered, since server-rendered attribute values are already correct.
-- **Binding skip**: `HTMLBindingDirective.bind()` skips `updateTarget` for `attribute` and `booleanAttribute` aspect types when the view is prerendered.
+- **Binding skip**: Part-backed attribute bindings preserve server-rendered
+  values during the initial prerendered bind.
 
 ### Hydration Mismatch Diagnostics
 
 If a prerendered DOM diverges from the client template in a way FAST cannot
-reconcile (the `render()` empty-boundary and `repeat()` count-mismatch cases
-recover silently), `HydrationBindingError` or `HydrationTargetElementError` is
-thrown. By default the message is a single line pointing at the opt-in
+reconcile, `HydrationBindingError` or `HydrationTargetElementError` is thrown.
+By default the message is a single line pointing at the opt-in
 `hydrationDebugger()`. Install the debugger to get a rich
 "Expected … / Received …" report with the SSR HTML snippet and structured
 `expected` / `received` fields on the thrown error:

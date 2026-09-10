@@ -15,7 +15,7 @@ navigationOptions:
 
 ## TemplateParser class
 
-Converts declarative HTML template markup into the `strings` and `values` arrays that `ViewTemplate.create()` consumes.
+Converts declarative HTML template markup into the `strings` and `values` arrays consumed by the low-level part-backed declarative compiler.
 
 This class is intentionally stateless across invocations — all mutable parsing state lives on the call stack or in the `TemplateResolutionContext`<!-- -->.
 
@@ -26,6 +26,40 @@ The parsing pipeline is fully synchronous — no promises are allocated during t
 ```typescript
 export declare class TemplateParser
 ```
+
+## Constructors
+
+<table><thead><tr><th>
+
+Constructor
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[(constructor)(runtime)](../fast-element.templateparser._constructor_/)
+
+
+</td><td>
+
+
+</td><td>
+
+Constructs a new instance of the `TemplateParser` class
+
+
+</td></tr>
+</tbody></table>
 
 ## Methods
 

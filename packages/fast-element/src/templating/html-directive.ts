@@ -130,6 +130,11 @@ export interface Aspected {
     targetAspect: string;
 
     /**
+     * The namespace of an attribute target, when present.
+     */
+    targetNamespace?: string | null;
+
+    /**
      * The type of aspect to target.
      */
     aspectType: DOMAspect;

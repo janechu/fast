@@ -42,28 +42,6 @@ An implementation of [Accessor](../fast-element.accessor/) that supports reactiv
 </td></tr>
 <tr><td>
 
-[ChildrenDirective](../fast-element.childrendirective/)
-
-
-</td><td>
-
-The runtime behavior for child node observation.
-
-
-</td></tr>
-<tr><td>
-
-[DefaultExecutionContext](../fast-element.defaultexecutioncontext/)
-
-
-</td><td>
-
-The default execution context for template views.
-
-
-</td></tr>
-<tr><td>
-
 [ElementController](../fast-element.elementcontroller/)
 
 
@@ -97,43 +75,6 @@ Defines metadata for a FASTElement.
 </td></tr>
 <tr><td>
 
-[HTMLBindingDirective](../fast-element.htmlbindingdirective/)
-
-
-</td><td>
-
-The central binding directive that bridges data expressions and DOM updates.
-
-HTMLBindingDirective fulfills three roles simultaneously: - \*\*HTMLDirective\*\*: Produces placeholder HTML via createHTML() during template authoring. - \*\*ViewBehaviorFactory\*\*: Creates behaviors (returns itself) during view creation. - \*\*ViewBehavior / EventListener\*\*: Attaches to a DOM node during bind, manages expression observers for reactive updates, and handles DOM events directly.
-
-The aspectType (set by HTMLDirective.assignAspect during template processing) determines which DOM "sink" function is used to apply values — e.g., setAttribute for attributes, addEventListener for events, textContent for content.
-
-
-</td></tr>
-<tr><td>
-
-[HTMLView](../fast-element.htmlview/)
-
-
-</td><td>
-
-The standard View implementation, which also implements ElementView and SyntheticView.
-
-
-</td></tr>
-<tr><td>
-
-[InlineTemplateDirective](../fast-element.inlinetemplatedirective/)
-
-
-</td><td>
-
-Inlines a template into another template.
-
-
-</td></tr>
-<tr><td>
-
 [PropertyChangeNotifier](../fast-element.propertychangenotifier/)
 
 
@@ -145,78 +86,12 @@ An implementation of Notifier that allows subscribers to be notified of individu
 </td></tr>
 <tr><td>
 
-[RefDirective](../fast-element.refdirective/)
-
-
-</td><td>
-
-The runtime behavior for template references.
-
-
-</td></tr>
-<tr><td>
-
-[RenderBehavior](../fast-element.renderbehavior/)
-
-
-</td><td>
-
-A Behavior that enables advanced rendering.
-
-
-</td></tr>
-<tr><td>
-
-[RenderDirective](../fast-element.renderdirective/)
-
-
-</td><td>
-
-A Directive that enables use of the RenderBehavior.
-
-
-</td></tr>
-<tr><td>
-
-[RepeatBehavior](../fast-element.repeatbehavior/)
-
-
-</td><td>
-
-A behavior that renders a template for each item in an array.
-
-
-</td></tr>
-<tr><td>
-
-[RepeatDirective](../fast-element.repeatdirective/)
-
-
-</td><td>
-
-A directive that configures list rendering.
-
-
-</td></tr>
-<tr><td>
-
 [Schema](../fast-element.schema/)
 
 
 </td><td>
 
 A constructed JSON schema from a template
-
-
-</td></tr>
-<tr><td>
-
-[SlottedDirective](../fast-element.slotteddirective/)
-
-
-</td><td>
-
-The runtime behavior for slotted node observation.
 
 
 </td></tr>
@@ -257,17 +132,6 @@ An implementation of [Notifier](../fast-element.notifier/) that efficiently keep
 
 
 </td></tr>
-<tr><td>
-
-[ViewTemplate](../fast-element.viewtemplate/)
-
-
-</td><td>
-
-A template capable of creating HTMLView instances or rendering directly to DOM.
-
-
-</td></tr>
 </tbody></table>
 
 ## Abstract Classes
@@ -291,28 +155,6 @@ Description
 </td><td>
 
 Captures a binding expression along with related information and capabilities.
-
-
-</td></tr>
-<tr><td>
-
-[NodeObservationDirective](../fast-element.nodeobservationdirective/)
-
-
-</td><td>
-
-A base class for node observation.
-
-
-</td></tr>
-<tr><td>
-
-[StatelessAttachedAttributeDirective](../fast-element.statelessattachedattributedirective/)
-
-
-</td><td>
-
-A base class used for attribute directives that don't need internal state.
 
 
 </td></tr>
@@ -381,17 +223,6 @@ Decorator: Specifies an HTML attribute.
 </td></tr>
 <tr><td>
 
-[children(propertyOrOptions)](../fast-element.children/)
-
-
-</td><td>
-
-A directive that observes the `childNodes` of an element and updates a property whenever they change.
-
-
-</td></tr>
-<tr><td>
-
 [composedContains(reference, test)](../fast-element.composedcontains/)
 
 
@@ -449,34 +280,12 @@ Decorator: Defines a platform custom element based on `FASTElement`<!-- -->.
 </td></tr>
 <tr><td>
 
-[elements(selector)](../fast-element.elements/)
-
-
-</td><td>
-
-Creates a function that can be used to filter a Node array, selecting only elements.
-
-
-</td></tr>
-<tr><td>
-
 [enableDebug()](../fast-element.enabledebug/)
 
 
 </td><td>
 
 Enables human-readable FAST debug messages.
-
-
-</td></tr>
-<tr><td>
-
-[htmlDirective(options)](../fast-element.htmldirective/)
-
-
-</td><td>
-
-Decorator: Defines an HTMLDirective.
 
 
 </td></tr>
@@ -570,56 +379,12 @@ Creates an standard binding.
 </td></tr>
 <tr><td>
 
-[ref(propertyName)](../fast-element.ref/)
-
-
-</td><td>
-
-A directive that observes the updates a property with a reference to the element.
-
-
-</td></tr>
-<tr><td>
-
-[render(value, template)](../fast-element.render/)
-
-
-</td><td>
-
-Creates a RenderDirective for use in advanced rendering scenarios.
-
-
-</td></tr>
-<tr><td>
-
-[repeat(items, template, options)](../fast-element.repeat/)
-
-
-</td><td>
-
-A directive that enables list rendering.
-
-
-</td></tr>
-<tr><td>
-
 [signal(expression, options, policy)](../fast-element.signal/)
 
 
 </td><td>
 
 Creates a signal binding configuration with the supplied options.
-
-
-</td></tr>
-<tr><td>
-
-[slotted(propertyOrOptions)](../fast-element.slotted/)
-
-
-</td><td>
-
-A directive that observes the `assignedNodes()` of a slot and updates a property whenever they change.
 
 
 </td></tr>
@@ -678,17 +443,6 @@ Decorator: Marks a property getter as having volatile observable dependencies.
 
 
 </td></tr>
-<tr><td>
-
-[when(condition, templateOrTemplateBinding, elseTemplateOrTemplateBinding)](../fast-element.when/)
-
-
-</td><td>
-
-A directive that enables basic conditional rendering in a template.
-
-
-</td></tr>
 </tbody></table>
 
 ## Interfaces
@@ -739,17 +493,6 @@ An observer for arrays.
 </td></tr>
 <tr><td>
 
-[Aspected](../fast-element.aspected/)
-
-
-</td><td>
-
-Represents something that applies to a specific aspect of the DOM.
-
-
-</td></tr>
-<tr><td>
-
 [BindingDirective](../fast-element.bindingdirective/)
 
 
@@ -783,45 +526,12 @@ A marker interface used to capture types when interpolating Directive helpers in
 </td></tr>
 <tr><td>
 
-[ChildListDirectiveOptions](../fast-element.childlistdirectiveoptions/)
-
-
-</td><td>
-
-The options used to configure child list observation.
-
-
-</td></tr>
-<tr><td>
-
 [ChildrenMap](../fast-element.childrenmap/)
 
 
 </td><td>
 
 Describes a child custom element binding referenced by a schema path.
-
-
-</td></tr>
-<tr><td>
-
-[ContentTemplate](../fast-element.contenttemplate/)
-
-
-</td><td>
-
-A simple template that can create ContentView instances.
-
-
-</td></tr>
-<tr><td>
-
-[ContentView](../fast-element.contentview/)
-
-
-</td><td>
-
-A simple View that can be interpolated into HTML content.
 
 
 </td></tr>
@@ -1025,28 +735,6 @@ Controls the lifecycle and context of behaviors and styles associated with a com
 </td></tr>
 <tr><td>
 
-[HTMLDirective](../fast-element.htmldirective/)
-
-
-</td><td>
-
-Instructs the template engine to apply behavior to a node.
-
-
-</td></tr>
-<tr><td>
-
-[HTMLDirectiveDefinition](../fast-element.htmldirectivedefinition/)
-
-
-</td><td>
-
-Defines metadata for an HTMLDirective.
-
-
-</td></tr>
-<tr><td>
-
 [HTMLTemplateCompilationResult](../fast-element.htmltemplatecompilationresult/)
 
 
@@ -1102,17 +790,6 @@ Observes array lengths.
 </td></tr>
 <tr><td>
 
-[NodeBehaviorOptions](../fast-element.nodebehavioroptions/)
-
-
-</td><td>
-
-Options for configuring node observation behavior.
-
-
-</td></tr>
-<tr><td>
-
 [Notifier](../fast-element.notifier/)
 
 
@@ -1146,17 +823,6 @@ Represents metadata configuration for a custom element.
 </td></tr>
 <tr><td>
 
-[PartialHTMLDirectiveDefinition](../fast-element.partialhtmldirectivedefinition/)
-
-
-</td><td>
-
-Represents metadata configuration for an HTMLDirective.
-
-
-</td></tr>
-<tr><td>
-
 [RegisterPathConfig](../fast-element.registerpathconfig/)
 
 
@@ -1179,34 +845,12 @@ A path discovered from a repeat directive.
 </td></tr>
 <tr><td>
 
-[RepeatOptions](../fast-element.repeatoptions/)
-
-
-</td><td>
-
-Options for configuring repeat behavior.
-
-
-</td></tr>
-<tr><td>
-
 [ShadowRootOptions](../fast-element.shadowrootoptions/)
 
 
 </td><td>
 
 Shadow root initialization options.
-
-
-</td></tr>
-<tr><td>
-
-[SlottedDirectiveOptions](../fast-element.slotteddirectiveoptions/)
-
-
-</td><td>
-
-The options used to configure slotted node observation.
 
 
 </td></tr>
@@ -1262,17 +906,6 @@ A node that can be targeted by styles.
 </td><td>
 
 Implemented by objects that are interested in change notifications.
-
-
-</td></tr>
-<tr><td>
-
-[SubtreeDirectiveOptions](../fast-element.subtreedirectiveoptions/)
-
-
-</td><td>
-
-The options used to configure subtree observation.
 
 
 </td></tr>
@@ -1458,17 +1091,6 @@ A [ValueConverter](../fast-element.valueconverter/) that converts to and from `b
 </td></tr>
 <tr><td>
 
-[Compiler](../fast-element.compiler/)
-
-
-</td><td>
-
-Common APIs related to compilation.
-
-
-</td></tr>
-<tr><td>
-
 [css](../fast-element.css/)
 
 
@@ -1579,39 +1201,6 @@ The FAST custom element registry.
 </td></tr>
 <tr><td>
 
-[html](../fast-element.html/)
-
-
-</td><td>
-
-Transforms a template literal string into a ViewTemplate.
-
-
-</td></tr>
-<tr><td>
-
-[HTMLDirective](../fast-element.htmldirective/)
-
-
-</td><td>
-
-Instructs the template engine to apply behavior to a node.
-
-
-</td></tr>
-<tr><td>
-
-[Markup](../fast-element.markup/)
-
-
-</td><td>
-
-Common APIs related to markup generation.
-
-
-</td></tr>
-<tr><td>
-
 [nullableBooleanConverter](../fast-element.nullablebooleanconverter/)
 
 
@@ -1640,17 +1229,6 @@ A [ValueConverter](../fast-element.valueconverter/) that converts to and from `n
 </td><td>
 
 Common Observable APIs.
-
-
-</td></tr>
-<tr><td>
-
-[Parser](../fast-element.parser/)
-
-
-</td><td>
-
-Common APIs related to content parsing.
 
 
 </td></tr>
@@ -1759,17 +1337,6 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[AddViewBehaviorFactory](../fast-element.addviewbehaviorfactory/)
-
-
-</td><td>
-
-Used to add behavior factories when constructing templates.
-
-
-</td></tr>
-<tr><td>
-
 [AttributeConfiguration](../fast-element.attributeconfiguration/)
 
 
@@ -1825,45 +1392,12 @@ Represents a callable type such as a function or an object with a "call" method.
 </td></tr>
 <tr><td>
 
-[ChildrenDirectiveOptions](../fast-element.childrendirectiveoptions/)
-
-
-</td><td>
-
-The options used to configure child/subtree node observation.
-
-
-</td></tr>
-<tr><td>
-
 [Class](../fast-element.class/)
 
 
 </td><td>
 
 Represents a constructable class with a prototype.
-
-
-</td></tr>
-<tr><td>
-
-[CompilationStrategy](../fast-element.compilationstrategy/)
-
-
-</td><td>
-
-A function capable of compiling a template from the preprocessed form produced by the html template function into a result that can instantiate views.
-
-
-</td></tr>
-<tr><td>
-
-[CompiledViewBehaviorFactory](../fast-element.compiledviewbehaviorfactory/)
-
-
-</td><td>
-
-Represents a ViewBehaviorFactory after the compilation process has completed.
 
 
 </td></tr>
@@ -2056,17 +1590,6 @@ A specific DOM sink guard for a node aspect.
 </td></tr>
 <tr><td>
 
-[ElementsFilter](../fast-element.elementsfilter/)
-
-
-</td><td>
-
-Elements filter function type.
-
-
-</td></tr>
-<tr><td>
-
 [Expression](../fast-element.expression/)
 
 
@@ -2095,17 +1618,6 @@ A callback that receives a FASTElementDefinition during element registration. Ex
 </td><td>
 
 Resolves an element template from a composed definition.
-
-
-</td></tr>
-<tr><td>
-
-[HTMLTemplateTag](../fast-element.htmltemplatetag/)
-
-
-</td><td>
-
-Transforms a template literal string into a ViewTemplate.
 
 
 </td></tr>
@@ -2183,17 +1695,6 @@ The available values for SpliceStrategySupport.
 </td><td>
 
 **_(BETA)_** Options for creating state.
-
-
-</td></tr>
-<tr><td>
-
-[TemplateValue](../fast-element.templatevalue/)
-
-
-</td><td>
-
-Represents the types of values that can be interpolated into a template.
 
 
 </td></tr>

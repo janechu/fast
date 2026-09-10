@@ -1,6 +1,9 @@
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 import { FASTElement } from "@microsoft/fast-element/fast-element.js";
 import { observerMap } from "@microsoft/fast-element/observer-map.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 class SelectiveObsElement extends FASTElement {
     public user = {
@@ -65,7 +68,9 @@ class SelectiveObsElement extends FASTElement {
 SelectiveObsElement.define(
     {
         name: "selective-obs-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [
         observerMap({
@@ -110,7 +115,9 @@ class AllObsElement extends FASTElement {
 AllObsElement.define(
     {
         name: "all-obs-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -136,7 +143,9 @@ class EmptyPropsElement extends FASTElement {
 EmptyPropsElement.define(
     {
         name: "empty-props-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [
         observerMap({
@@ -163,7 +172,9 @@ class ArraySelectiveElement extends FASTElement {
 ArraySelectiveElement.define(
     {
         name: "array-selective-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [
         observerMap({

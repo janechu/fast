@@ -22,15 +22,23 @@ keywords:
 
 # Defining Declarative Elements
 
-A declarative FASTElement component requires a JavaScript class definition with `template: declarativeTemplate()` and an `<f-template>` in the HTML. The `declarativeTemplate()` function automatically defines the `<f-template>` custom element and waits for the matching template before completing registration. This page covers the JavaScript setup and extension configuration.
+A declarative FASTElement component requires a JavaScript class definition with
+`template: declarativeTemplate({ ponyfills })` and an `<f-template>` in the HTML.
+The function automatically defines the `<f-template>` custom element and waits
+for the matching template before completing registration.
 
 ## Basic Setup
 
-**1. Define the component class** with `template: declarativeTemplate()`:
+**1. Define the component class** with explicitly configured ponyfills:
 
 ```ts
 import { attr, FASTElement } from "@microsoft/fast-element";
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
+
+const ponyfills = [declarativeParts(), signals(), domScheduler()];
 
 class MyCounter extends FASTElement {
     @attr count: number = 0;
@@ -38,11 +46,13 @@ class MyCounter extends FASTElement {
 
 MyCounter.define({
     name: "my-counter",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({ ponyfills }),
 });
 ```
 
-The `template: declarativeTemplate()` setting tells FAST to wait for a matching `<f-template>` element before completing registration. It automatically defines FAST's internal `<f-template>` publisher in the relevant registry. If pre-rendered content exists in the DOM, call `enableHydration()` before elements connect to hydrate it; otherwise the element renders client-side.
+The configured declarative template tells FAST to wait for a matching
+`<f-template>` element before completing registration. It automatically defines
+FAST's internal publisher in the relevant registry.
 
 **2. Write the template** in an HTML file:
 
@@ -86,7 +96,7 @@ class TaskItem extends FASTElement {
 TaskItem.define({
     name: "task-item",
     styles: css`:host { display: block; }`,
-    template: declarativeTemplate(),
+    template: declarativeTemplate({ ponyfills }),
 });
 ```
 
@@ -132,7 +142,7 @@ class MyElement extends FASTElement {}
 MyElement.define(
     {
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({ ponyfills }),
     },
     [observerMap(), attributeMap()],
 );
@@ -155,7 +165,7 @@ import { observerMap } from "@microsoft/fast-element/observer-map.js";
 UserProfile.define(
     {
         name: "user-profile",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({ ponyfills }),
     },
     [observerMap()],
 );
@@ -182,7 +192,7 @@ For fine-grained control, pass a configuration object with a `properties` key:
 UserProfile.define(
     {
         name: "user-profile",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({ ponyfills }),
     },
     [
         observerMap({
@@ -265,7 +275,7 @@ import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 GreetingCard.define(
     {
         name: "greeting-card",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({ ponyfills }),
     },
     [attributeMap()],
 );
@@ -299,7 +309,7 @@ The `attribute-name-strategy` option controls how template binding keys map to H
 MyElement.define(
     {
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({ ponyfills }),
     },
     [
         attributeMap({
@@ -330,7 +340,7 @@ class ProductCard extends FASTElement {}
 ProductCard.define(
     {
         name: "product-card",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({ ponyfills }),
     },
     [observerMap(), attributeMap()],
 );
@@ -366,7 +376,7 @@ function logDefinition(): FASTElementExtension {
 
 MyComponent.define({
     name: "my-component",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({ ponyfills }),
 }, [observerMap(), attributeMap(), logDefinition()]);
 ```
 

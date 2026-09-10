@@ -1,5 +1,6 @@
 import type { FASTElementDefinition } from "../components/fast-definitions.js";
 import type { ElementViewTemplate } from "../templating/template.js";
+import type { DeclarativePonyfillRuntime } from "./ponyfills.js";
 
 /**
  * Publishes a concrete template for a definition.
@@ -8,11 +9,13 @@ import type { ElementViewTemplate } from "../templating/template.js";
 export interface TemplatePublisher {
     publishTemplate(
         definition: FASTElementDefinition,
+        runtime: DeclarativePonyfillRuntime,
     ): ElementViewTemplate | Promise<ElementViewTemplate>;
 }
 
 interface TemplateRequest {
     definition: FASTElementDefinition;
+    runtime: DeclarativePonyfillRuntime;
     publisher?: TemplatePublisher;
     publishing?: Promise<void>;
     settled: boolean;
@@ -39,11 +42,13 @@ export class DeclarativeTemplateBridge {
 
     public requestTemplate(
         definition: FASTElementDefinition,
+        runtime: DeclarativePonyfillRuntime,
     ): Promise<ElementViewTemplate> {
         return new Promise((resolve, reject) => {
             const bucket = this.getBucket(definition.registry, definition.name, true)!;
             const request: TemplateRequest = {
                 definition,
+                runtime,
                 settled: false,
                 resolve,
                 reject,
@@ -158,7 +163,9 @@ export class DeclarativeTemplateBridge {
 
             request.publisher = publisher;
             request.publishing = Promise.resolve()
-                .then(() => publisher.publishTemplate(request.definition))
+                .then(() =>
+                    publisher.publishTemplate(request.definition, request.runtime),
+                )
                 .then(template => {
                     if (request.settled) {
                         return;

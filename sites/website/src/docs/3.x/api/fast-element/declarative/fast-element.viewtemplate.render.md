@@ -93,4 +93,4 @@ _(Optional)_ An HTML element to target the host bindings at if different from th
 
 **Returns:**
 
-[HTMLView](../fast-element.htmlview/)<!-- -->&lt;TSource, TParent&gt;
+HTMLView&lt;TSource, TParent&gt;

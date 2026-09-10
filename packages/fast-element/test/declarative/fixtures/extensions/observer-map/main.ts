@@ -5,6 +5,9 @@ import { FASTElement } from "@microsoft/fast-element/fast-element.js";
 import { enableHydration } from "@microsoft/fast-element/hydration.js";
 import { Observable, observable } from "@microsoft/fast-element/observable.js";
 import { observerMap } from "@microsoft/fast-element/observer-map.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 import { Updates } from "@microsoft/fast-element/updates.js";
 
 class ObserverMapTestElement extends FASTElement {
@@ -578,7 +581,9 @@ class ObserverMapWithObservablesTestElement extends FASTElement {
 ObserverMapInternalTestElement.define(
     {
         name: "observer-map-internal-test-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -586,7 +591,9 @@ ObserverMapInternalTestElement.define(
 ObserverMapTestElement.define(
     {
         name: "observer-map-test-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -594,7 +601,9 @@ ObserverMapTestElement.define(
 ObserverMapWithObservablesTestElement.define(
     {
         name: "observer-map-with-observables-test-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -614,7 +623,9 @@ class ObserverMapSimpleArrayTestElement extends FASTElement {
 ObserverMapSimpleArrayTestElement.define(
     {
         name: "observer-map-simple-array-test-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );

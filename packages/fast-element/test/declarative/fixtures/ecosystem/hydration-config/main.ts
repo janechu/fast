@@ -2,6 +2,9 @@ import { attr } from "@microsoft/fast-element/attr.js";
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 import { FASTElement } from "@microsoft/fast-element/fast-element.js";
 import { enableHydration, StopHydration } from "@microsoft/fast-element/hydration.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 export const hydrationEvents: string[] = [];
 const hydration = enableHydration({
@@ -20,5 +23,7 @@ void hydration.whenHydrated("hydration-config-element").then(() => {
 
 HydrationOptionsElement.define({
     name: "hydration-config-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });

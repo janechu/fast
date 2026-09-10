@@ -169,7 +169,8 @@ Multiple `<f-template>` elements can be defined in a single `templates.html` —
 The component definition file registers custom elements and configures the template system. Every fixture must:
 
 1. Define element classes extending `FASTElement`.
-2. Call `define()` on the element class with `template: declarativeTemplate()`.
+2. Call `define()` on the element class with
+   `template: declarativeTemplate({ ponyfills })`.
 3. Use `enableHydration().whenHydrated()` for hydration readiness, and define
    extensions such as `attributeMap()` / `observerMap()` for schema behavior.
    `declarativeTemplate()` registers FAST's internal `<f-template>` publisher
@@ -192,6 +193,9 @@ import {
     observable,
 } from "@microsoft/fast-element";
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 class MyElement extends FASTElement {
     @attr
@@ -199,7 +203,9 @@ class MyElement extends FASTElement {
 }
 MyElement.define({
     name: "my-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 ```
 
@@ -237,11 +243,16 @@ definition-scoped `observerMap()` extension:
 ```typescript
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 import { observerMap } from "@microsoft/fast-element/observer-map.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 MyElement.define(
     {
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );

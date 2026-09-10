@@ -4,6 +4,9 @@ import { FASTElement } from "@microsoft/fast-element/fast-element.js";
 import { enableHydration } from "@microsoft/fast-element/hydration.js";
 import { observable } from "@microsoft/fast-element/observable.js";
 import { observerMap } from "@microsoft/fast-element/observer-map.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 export const promiseEvents: Array<{ promise: string; name?: string }> = [];
 
@@ -20,7 +23,9 @@ class SimpleElement extends FASTElement {
 
 SimpleElement.define({
     name: "simple-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class ComplexElement extends FASTElement {
@@ -45,7 +50,9 @@ class ComplexElement extends FASTElement {
 ComplexElement.define(
     {
         name: "complex-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [observerMap()],
 );
@@ -57,7 +64,9 @@ class NestedElement extends FASTElement {
 
 NestedElement.define({
     name: "nested-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class DeferredElement extends FASTElement {
@@ -74,7 +83,9 @@ class DeferredElement extends FASTElement {
 
 DeferredElement.define({
     name: "deferred-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class DeferredParentElement extends FASTElement {
@@ -88,7 +99,9 @@ class DeferredParentElement extends FASTElement {
 
 DeferredParentElement.define({
     name: "deferred-parent-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class DeferredChildElement extends FASTElement {
@@ -102,7 +115,9 @@ class DeferredChildElement extends FASTElement {
 
 DeferredChildElement.define({
     name: "deferred-child-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 (window as any).promiseEvents = promiseEvents;

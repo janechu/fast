@@ -1,11 +1,8 @@
-import { oneTime } from "../binding/one-time.js";
-import { oneWay } from "../binding/one-way.js";
 import { DOM } from "../dom.js";
 import type { DOMPolicy } from "../dom-policy.js";
 import { isFunction, isString, Message } from "../interfaces.js";
-import type { ExecutionContext } from "../observation/observable.js";
+import type { ExecutionContext, Expression } from "../observation/observable.js";
 import { FAST } from "../platform.js";
-import { HTMLBindingDirective } from "./html-binding-directive.js";
 import {
     type Aspected,
     type CompiledViewBehaviorFactory,
@@ -25,11 +22,26 @@ import { HTMLView } from "./view.js";
 const targetIdFrom = (parentId: string, nodeIndex: number): string =>
     `${parentId}.${nodeIndex}`;
 const descriptorCache: PropertyDescriptorMap = {};
+const attributeNamespaces: Record<string, string> = {
+    xlink: "http://www.w3.org/1999/xlink",
+    xml: "http://www.w3.org/XML/1998/namespace",
+    xmlns: "http://www.w3.org/2000/xmlns/",
+};
 
 interface NextNode {
     index: number;
     node: ChildNode | null;
 }
+
+/**
+ * Creates the binding behavior used by a compilation strategy.
+ * @internal
+ */
+export type CompilationBindingFactory = (
+    expression: Expression,
+    policy?: DOMPolicy,
+    isVolatile?: boolean,
+) => ViewBehaviorFactory & Aspected;
 
 // used to prevent creating lots of objects just to track node and index while compiling
 const next: NextNode = {
@@ -68,7 +80,22 @@ class CompilationContext<TSource = any, TParent = any>
         public readonly fragment: DocumentFragment,
         public readonly directives: Record<string, ViewBehaviorFactory>,
         public readonly policy: DOMPolicy,
+        public readonly bindingFactory?: CompilationBindingFactory,
     ) {}
+
+    public createBinding(
+        expression: Expression,
+        policy?: DOMPolicy,
+        isVolatile?: boolean,
+    ): ViewBehaviorFactory & Aspected {
+        if (!this.bindingFactory) {
+            throw new Error(
+                "Dynamic template compilation requires a configured binding factory.",
+            );
+        }
+
+        return this.bindingFactory(expression, policy, isVolatile);
+    }
 
     public addFactory(
         factory: CompiledViewBehaviorFactory,
@@ -183,16 +210,27 @@ function compileAttributes(
 
         if (parseResult === null) {
             if (includeBasicValues) {
-                result = new HTMLBindingDirective(
-                    oneTime(() => attrValue, context.policy),
-                );
-                HTMLDirective.assignAspect(result as any as Aspected, attr.name);
+                result = context.createBinding(() => attrValue, context.policy, false);
+                HTMLDirective.assignAspect(result as unknown as Aspected, attr.name);
             }
         } else {
-            result = Compiler.aggregate(parseResult, context.policy);
+            result = Compiler.aggregate(
+                parseResult,
+                context.policy,
+                context.bindingFactory,
+            );
         }
 
         if (result !== null) {
+            const separator = attr.name.indexOf(":");
+            const prefix = separator === -1 ? null : attr.name.slice(0, separator);
+            (result as unknown as Aspected).targetNamespace =
+                attr.namespaceURI ??
+                (prefix === null
+                    ? null
+                    : (node.lookupNamespaceURI(prefix) ??
+                      attributeNamespaces[prefix] ??
+                      null));
             node.removeAttributeNode(attr);
             i--;
             ii--;
@@ -293,7 +331,11 @@ function compileNode(
             const parts = Parser.parse((node as Comment).data, context.directives);
             if (parts !== null) {
                 context.addFactory(
-                    Compiler.aggregate(parts) as CompiledViewBehaviorFactory,
+                    Compiler.aggregate(
+                        parts,
+                        context.policy,
+                        context.bindingFactory,
+                    ) as CompiledViewBehaviorFactory,
                     parentId,
                     nodeId,
                     nodeIndex,
@@ -337,6 +379,11 @@ export type CompilationStrategy = (
      * The security policy to compile the html with.
      */
     policy: DOMPolicy,
+
+    /**
+     * Creates binding behaviors for the selected rendering backend.
+     */
+    bindingFactory?: CompilationBindingFactory,
 ) => TemplateCompilationResult;
 
 const templateTag = "TEMPLATE";
@@ -362,6 +409,7 @@ export const Compiler = {
         html: string | HTMLTemplateElement,
         factories: Record<string, ViewBehaviorFactory>,
         policy: DOMPolicy = DOM.policy,
+        bindingFactory?: CompilationBindingFactory,
     ): TemplateCompilationResult<TSource, TParent> {
         let template: HTMLTemplateElement;
 
@@ -389,6 +437,7 @@ export const Compiler = {
             fragment,
             factories,
             policy,
+            bindingFactory,
         );
         compileAttributes(context, "", template, /* host */ "h", 0, true);
 
@@ -430,6 +479,7 @@ export const Compiler = {
     aggregate(
         parts: (string | ViewBehaviorFactory)[],
         policy: DOMPolicy = DOM.policy,
+        bindingFactory?: CompilationBindingFactory,
     ): ViewBehaviorFactory {
         if (parts.length === 1) {
             return parts[0] as ViewBehaviorFactory;
@@ -461,10 +511,13 @@ export const Compiler = {
             return output;
         };
 
-        const directive = new HTMLBindingDirective(
-            oneWay(expression, bindingPolicy ?? policy, isVolatile),
-        );
+        if (!bindingFactory) {
+            throw new Error(
+                "Aggregated template bindings require a configured binding factory.",
+            );
+        }
 
+        const directive = bindingFactory(expression, bindingPolicy ?? policy, isVolatile);
         HTMLDirective.assignAspect(directive, sourceAspect!);
         return directive;
     },

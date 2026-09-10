@@ -91,7 +91,143 @@ export type ConstructibleStyleStrategy = {
 };
 
 // @public
-export function declarativeTemplate<TType extends Constructable<HTMLElement> = Constructable<HTMLElement>>(): FASTElementTemplateResolver<TType>;
+export interface DeclarativeAttributePartPonyfill {
+    // Warning: (ae-forgotten-export) The symbol "Part" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    create(element: Element, qualifiedName: string, namespace?: string | null, booleanMode?: boolean): Part;
+    // (undocumented)
+    readonly kind: "attribute-part";
+}
+
+// @public
+export interface DeclarativeChildNodePartPonyfill {
+    // (undocumented)
+    create(parentNode: Node, previousSibling?: Node | null, nextSibling?: Node | null): Part;
+    // (undocumented)
+    readonly kind: "child-node-part";
+}
+
+// @public
+export interface DeclarativeDOMSchedulerPonyfill {
+    // (undocumented)
+    cancel(task: Callable): void;
+    // Warning: (ae-forgotten-export) The symbol "Callable" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    enqueue(target: Node, task: Callable): void;
+    // (undocumented)
+    flush(): void;
+    // (undocumented)
+    readonly kind: "dom-scheduler";
+    // (undocumented)
+    next(): Promise<void>;
+}
+
+// @public
+export interface DeclarativeEventPartPonyfill {
+    // (undocumented)
+    create(element: Element, eventType: string, options?: AddEventListenerOptions | boolean): Part;
+    // (undocumented)
+    readonly kind: "event-part";
+}
+
+// @public
+export interface DeclarativeNodePartPonyfill {
+    // (undocumented)
+    create(node: Node): Part;
+    // (undocumented)
+    readonly kind: "node-part";
+}
+
+// @public
+export type DeclarativePonyfill = DeclarativeDOMSchedulerPonyfill | DeclarativeSignalsPonyfill | DeclarativeNodePartPonyfill | DeclarativeAttributePartPonyfill | DeclarativeChildNodePartPonyfill | DeclarativePropertyPartPonyfill | DeclarativeEventPartPonyfill | DeclarativeTokenListPartPonyfill | DeclarativeViewPartPonyfill | DeclarativePonyfillGroup;
+
+// @public
+export interface DeclarativePonyfillGroup {
+    // (undocumented)
+    readonly kind: "ponyfill-group";
+    // (undocumented)
+    readonly ponyfills: readonly DeclarativePonyfill[];
+}
+
+// @public
+export interface DeclarativePonyfillRuntime {
+    // (undocumented)
+    readonly attributePart?: DeclarativeAttributePartPonyfill;
+    // (undocumented)
+    readonly childNodePart?: DeclarativeChildNodePartPonyfill;
+    // (undocumented)
+    readonly eventPart?: DeclarativeEventPartPonyfill;
+    // (undocumented)
+    readonly nodePart?: DeclarativeNodePartPonyfill;
+    // (undocumented)
+    readonly propertyPart?: DeclarativePropertyPartPonyfill;
+    // (undocumented)
+    readonly scheduler: DeclarativeDOMSchedulerPonyfill;
+    // (undocumented)
+    readonly signals: DeclarativeSignalsPonyfill;
+    // (undocumented)
+    readonly tokenListPart?: DeclarativeTokenListPartPonyfill;
+    // (undocumented)
+    readonly viewPart?: DeclarativeViewPartPonyfill;
+}
+
+// @public
+export interface DeclarativePropertyPartPonyfill {
+    // (undocumented)
+    create(node: Node, propertyName: string): Part;
+    // (undocumented)
+    readonly kind: "property-part";
+}
+
+// @public
+export interface DeclarativeSignalsPonyfill {
+    // Warning: (ae-forgotten-export) The symbol "Expression" needs to be exported by the entry point index.d.ts
+    // Warning: (ae-forgotten-export) The symbol "Binding" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    binding<TSource = any, TReturn = any, TParent = any>(expression: Expression<TSource, TReturn, TParent>, scheduler: DeclarativeDOMSchedulerPonyfill, policy?: DOMPolicy, isVolatile?: boolean): Binding<TSource, TReturn, TParent>;
+    // Warning: (ae-forgotten-export) The symbol "DeclarativeSignal" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    computed<T>(compute: () => T): DeclarativeSignal<T>;
+    // Warning: (ae-forgotten-export) The symbol "DeclarativeSignalEffect" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    effect(target: Node, callback: () => void, scheduler: DeclarativeDOMSchedulerPonyfill): DeclarativeSignalEffect;
+    // (undocumented)
+    readonly kind: "signals";
+    // Warning: (ae-forgotten-export) The symbol "DeclarativeStateSignal" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    state<T>(value: T): DeclarativeStateSignal<T>;
+}
+
+// @public
+export function declarativeTemplate<TType extends Constructable<HTMLElement> = Constructable<HTMLElement>>(options: DeclarativeTemplateOptions): FASTElementTemplateResolver<TType>;
+
+// @public
+export interface DeclarativeTemplateOptions {
+    // (undocumented)
+    ponyfills: readonly DeclarativePonyfill[];
+}
+
+// @public
+export interface DeclarativeTokenListPartPonyfill {
+    // (undocumented)
+    create(element: Element, propertyName: string): Part;
+    // (undocumented)
+    readonly kind: "token-list-part";
+}
+
+// @public
+export interface DeclarativeViewPartPonyfill {
+    // (undocumented)
+    create(target: Node, controller: any, targetNodeId: string): Part;
+    // (undocumented)
+    readonly kind: "view-part";
+}
 
 // @public
 export interface DefaultCachedPath extends CachedPathCommon {
@@ -227,45 +363,12 @@ export type FASTElementTemplateResolver<TType extends Constructable<HTMLElement>
 
 // @public
 export interface HTMLTemplateCompilationResult<TSource = any, TParent = any> {
+    // Warning: (ae-forgotten-export) The symbol "HTMLView" needs to be exported by the entry point index.d.ts
     createView(hostBindingTarget?: Element): HTMLView<TSource, TParent>;
     // Warning: (ae-forgotten-export) The symbol "CompiledViewBehaviorFactory" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     readonly factories: CompiledViewBehaviorFactory[];
-}
-
-// Warning: (ae-forgotten-export) The symbol "DefaultExecutionContext" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "SyntheticView" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "ExecutionContext" needs to be exported by the entry point index.d.ts
-//
-// @public
-export class HTMLView<TSource = any, TParent = any> extends DefaultExecutionContext<TParent> implements ElementView<TSource, TParent>, SyntheticView<TSource, TParent>, ExecutionContext<TParent> {
-    constructor(fragment: DocumentFragment, factories: ReadonlyArray<CompiledViewBehaviorFactory>, targets: ViewBehaviorTargets);
-    appendTo(node: Node): void;
-    bind(source: TSource, context?: ExecutionContext<TParent>): void;
-    context: ExecutionContext<TParent>;
-    dispose(): void;
-    static disposeContiguousBatch(views: SyntheticView[]): void;
-    firstChild: Node;
-    insertBefore(node: Node): void;
-    isBound: boolean;
-    isHydrated: Promise<boolean>;
-    isPrerendered: Promise<boolean>;
-    lastChild: Node;
-    // (undocumented)
-    onUnbind(behavior: {
-        unbind(controller: ViewController<TSource, TParent>): void;
-    }): void;
-    remove(): void;
-    // @internal
-    _skipAttrUpdates: boolean;
-    source: TSource | null;
-    readonly sourceLifetime: SourceLifetime;
-    // Warning: (ae-forgotten-export) The symbol "ViewBehaviorTargets" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    readonly targets: ViewBehaviorTargets;
-    unbind(): void;
 }
 
 // @public
@@ -370,22 +473,16 @@ export interface StyleTarget extends Pick<Node, "getRootNode"> {
 
 // @public
 export interface SyntheticViewTemplate<TSource = any, TParent = any> {
+    // Warning: (ae-forgotten-export) The symbol "SyntheticView" needs to be exported by the entry point index.d.ts
     create(): SyntheticView<TSource, TParent>;
-    inline(): CaptureType<TSource, TParent>;
 }
 
 // @public
 export class TemplateParser {
+    constructor(runtime: DeclarativePonyfillRuntime);
     createTemplate(strings: Array<string>, values: Array<any>): ViewTemplate<any, any>;
     parse(innerHTML: string, schema: Schema): ResolvedStringsAndValues;
 }
-
-// Warning: (ae-forgotten-export) The symbol "Expression" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "Binding" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "HTMLDirective" needs to be exported by the entry point index.d.ts
-//
-// @public
-export type TemplateValue<TSource, TParent = any> = Expression<TSource, any, TParent> | Binding<TSource, any, TParent> | HTMLDirective | CaptureType<TSource, TParent>;
 
 // @public
 export type TrustedTypesPolicy = {
@@ -414,14 +511,13 @@ export interface ViewBehaviorFactory {
 
 // @public
 export class ViewTemplate<TSource = any, TParent = any> implements ElementViewTemplate<TSource, TParent>, SyntheticViewTemplate<TSource, TParent> {
-    constructor(html: string | HTMLTemplateElement, factories?: Record<string, ViewBehaviorFactory>, policy?: DOMPolicy | undefined);
+    // Warning: (ae-forgotten-export) The symbol "CompilationBindingFactory" needs to be exported by the entry point index.d.ts
+    constructor(html: string | HTMLTemplateElement, factories?: Record<string, ViewBehaviorFactory>, policy?: DOMPolicy | undefined, bindingFactory?: CompilationBindingFactory | undefined);
     // @internal (undocumented)
     compile(): HTMLTemplateCompilationResult<TSource, TParent>;
     create(hostBindingTarget?: Element): HTMLView<TSource, TParent>;
-    static create<TSource = any, TParent = any>(strings: string[], values: TemplateValue<TSource, TParent>[], policy?: DOMPolicy): ViewTemplate<TSource, TParent>;
     readonly factories: Record<string, ViewBehaviorFactory>;
     readonly html: string | HTMLTemplateElement;
-    inline(): CaptureType<TSource, TParent>;
     render(source: TSource, host: Node, hostBindingTarget?: Element): HTMLView<TSource, TParent>;
     withPolicy(policy: DOMPolicy): this;
 }

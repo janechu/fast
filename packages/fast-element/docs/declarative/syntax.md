@@ -24,9 +24,9 @@ After importing the declarative APIs as shown in the README, templates are
 associated with an element through
 `<f-template name="[custom-element-name]"><template>...</template></f-template>`.
 The host custom element should be defined with
-`template: declarativeTemplate()`. This automatically defines `<f-template>` in
-the relevant registry and waits for the matching declarative template when it is
-already present or inserted later.
+`template: declarativeTemplate({ ponyfills })`. This automatically defines
+`<f-template>` in the relevant registry and waits for the matching declarative
+template when it is already present or inserted later.
 
 The `@microsoft/fast-element` entrypoint itself remains
 side-effect free at import time. Declarative APIs lazily install declarative
@@ -116,7 +116,9 @@ For finer control, pass a configuration object with a `properties` key that maps
 UserProfile.define(
     {
         name: "user-profile",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [
         observerMap({
@@ -210,7 +212,9 @@ decorated with `@attr` or `@observable` on the class are left untouched.
 MyElement.define(
     {
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [attributeMap()],
 );
@@ -247,7 +251,9 @@ keys map to HTML attribute names. This matches the build-time
 MyElement.define(
     {
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [
         attributeMap({

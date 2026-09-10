@@ -58,7 +58,7 @@ Description
 
 </td><td>
 
-[CompiledViewBehaviorFactory](../fast-element.compiledviewbehaviorfactory/)<!-- -->\[\]
+CompiledViewBehaviorFactory\[\]
 
 
 </td><td>

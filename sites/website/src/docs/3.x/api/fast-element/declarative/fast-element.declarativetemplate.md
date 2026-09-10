@@ -20,8 +20,43 @@ Returns a declarative template resolver that waits for the matching `<f-template
 **Signature:**
 
 ```typescript
-export declare function declarativeTemplate<TType extends Constructable<HTMLElement> = Constructable<HTMLElement>>(): FASTElementTemplateResolver<TType>;
+export declare function declarativeTemplate<TType extends Constructable<HTMLElement> = Constructable<HTMLElement>>(options: DeclarativeTemplateOptions): FASTElementTemplateResolver<TType>;
 ```
+
+## Parameters
+
+<table><thead><tr><th>
+
+Parameter
+
+
+</th><th>
+
+Type
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+options
+
+
+</td><td>
+
+[DeclarativeTemplateOptions](../fast-element.declarativetemplateoptions/)
+
+
+</td><td>
+
+
+</td></tr>
+</tbody></table>
+
 **Returns:**
 
 [FASTElementTemplateResolver](../fast-element.fastelementtemplateresolver/)<!-- -->&lt;TType&gt;

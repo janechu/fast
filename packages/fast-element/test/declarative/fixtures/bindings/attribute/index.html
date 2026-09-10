@@ -8,6 +8,7 @@
         <test-element type="checkbox"><template shadowrootmode="open" shadowroot="open"><input type="checkbox" disabled data-fe="1"></template></test-element>
         <test-element-property><template shadowrootmode="open" shadowroot="open"><input type="checkbox" disabled data-fe="1"></template></test-element-property>
         <test-element-expression><template shadowrootmode="open" shadowroot="open"><input disabled type="button" data-fe="1"></template></test-element-expression>
+        <test-element-namespaced-attribute href="#icon"><template shadowrootmode="open" shadowroot="open"><svg><title>Test icon</title><use xlink:href="#icon" data-fe="1"></use></svg></template></test-element-namespaced-attribute>
 <f-template name="test-element">
     <template> <input type="{{type}}" disabled> </template>
 </f-template>
@@ -17,6 +18,11 @@
 <f-template name="test-element-expression">
     <template>
         <input ?disabled="{{activeGroup == currentGroup}}" type="button">
+    </template>
+</f-template>
+<f-template name="test-element-namespaced-attribute">
+    <template>
+        <svg><title>Test icon</title><use xlink:href="{{href}}"></use></svg>
     </template>
 </f-template>
 

@@ -132,72 +132,22 @@ export type {
 export { ElementStyles } from "./styles/element-styles.js";
 export type { HostBehavior, HostController } from "./styles/host.js";
 export type { StyleStrategy, StyleTarget } from "./styles/style-strategy.js";
-// Directives
-export {
-    type ChildListDirectiveOptions,
-    ChildrenDirective,
-    type ChildrenDirectiveOptions,
-    children,
-    type SubtreeDirectiveOptions,
-} from "./templating/children.js";
-// Templating
-export { type CompilationStrategy, Compiler } from "./templating/compiler.js";
-export {
-    type ContentTemplate,
-    type ContentView,
-    HTMLBindingDirective,
-} from "./templating/html-binding-directive.js";
-export {
-    type AddViewBehaviorFactory,
-    type Aspected,
-    type CompiledViewBehaviorFactory,
-    HTMLDirective,
-    type HTMLDirectiveDefinition,
-    htmlDirective,
-    type PartialHTMLDirectiveDefinition,
-    StatelessAttachedAttributeDirective,
-    type ViewBehavior,
-    type ViewBehaviorFactory,
-    type ViewBehaviorTargets,
-    type ViewController,
+// Declarative runtime extension contracts
+export type {
+    ViewBehavior,
+    ViewBehaviorFactory,
+    ViewBehaviorTargets,
+    ViewController,
 } from "./templating/html-directive.js";
-export { Markup, Parser } from "./templating/markup.js";
-export {
-    type ElementsFilter,
-    elements,
-    type NodeBehaviorOptions,
-    NodeObservationDirective,
-} from "./templating/node-observation.js";
-export { RefDirective, ref } from "./templating/ref.js";
-export { RenderBehavior, RenderDirective, render } from "./templating/render.js";
-export {
-    RepeatBehavior,
-    RepeatDirective,
-    type RepeatOptions,
-    repeat,
-} from "./templating/repeat.js";
-export {
-    SlottedDirective,
-    type SlottedDirectiveOptions,
-    slotted,
-} from "./templating/slotted.js";
-export {
-    type CaptureType,
-    type ElementViewTemplate,
-    type HTMLTemplateCompilationResult,
-    type HTMLTemplateTag,
-    html,
-    InlineTemplateDirective,
-    type SyntheticViewTemplate,
-    type TemplateValue,
-    ViewTemplate,
+export type {
+    CaptureType,
+    ElementViewTemplate,
+    HTMLTemplateCompilationResult,
+    SyntheticViewTemplate,
 } from "./templating/template.js";
-export {
-    DefaultExecutionContext,
-    type ElementView,
-    HTMLView,
-    type SyntheticView,
-    type View,
+export type {
+    ElementView,
+    SyntheticView,
+    View,
 } from "./templating/view.js";
-export { when } from "./templating/when.js";
 export * from "./utilities.js";

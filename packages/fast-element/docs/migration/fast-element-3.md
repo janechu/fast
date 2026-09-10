@@ -69,13 +69,11 @@ Core FAST Element helpers are available from the root package export:
 | `DOM`, `DOMAspect`, `DOMPolicy` | `@microsoft/fast-element` |
 | `Schema`, `schemaRegistry`, schema types | `@microsoft/fast-element` |
 | `css` | `@microsoft/fast-element` |
-| `html`, `ViewTemplate`, `HTMLView` | `@microsoft/fast-element` |
-| `Compiler`, `HTMLDirective`, `htmlDirective`, templating/view types | `@microsoft/fast-element` |
-| `render`, `RenderBehavior`, `RenderDirective` | `@microsoft/fast-element` |
+| `declarativeTemplate` and declarative configuration types | `@microsoft/fast-element/declarative.js` |
+| DOM part primitives and FAST declarative extensions | `@microsoft/fast-element/ponyfills/*.js` |
 | `enableHydration`, `deferHydrationAttribute`, `HydrationTracker`, hydration types | `@microsoft/fast-element/hydration.js` |
 | `ArrayObserver` | `@microsoft/fast-element` |
 | `volatile` | `@microsoft/fast-element` |
-| `children` | `@microsoft/fast-element` |
 | `elements`, `NodeObservationDirective` | `@microsoft/fast-element` |
 | `ref` | `@microsoft/fast-element` |
 | `slotted` | `@microsoft/fast-element` |
@@ -107,7 +105,7 @@ move to the flat path exports.
 |---|---|
 | `@microsoft/fast-element/binding/two-way.js` | `@microsoft/fast-element/two-way.js` |
 | `@microsoft/fast-element/binding/signal.js` | `@microsoft/fast-element/signal.js` |
-| Deep directive imports | `@microsoft/fast-element/children.js`, `@microsoft/fast-element/repeat.js`, `@microsoft/fast-element/when.js`, `@microsoft/fast-element/ref.js`, `@microsoft/fast-element/slotted.js`, or `@microsoft/fast-element/node-observation.js` |
+| Deep directive imports | Declarative `<f-template>` syntax with explicitly configured ponyfills |
 | Declarative map helpers from old declarative surfaces | `@microsoft/fast-element/attribute-map.js` and `@microsoft/fast-element/observer-map.js` |
 
 ### Removed package exports
@@ -204,7 +202,8 @@ which property receives data.
 
 ### Migration steps
 
-1. Replace manual `<f-template>` registration with `template: declarativeTemplate()`:
+1. Replace manual `<f-template>` registration with
+   `template: declarativeTemplate({ ponyfills })`:
 
    ```typescript
    // Before
@@ -215,10 +214,15 @@ which property receives data.
 
    // After
    import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+   import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+   import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+   import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
    MyElement.define({
        name: "my-element",
-       template: declarativeTemplate(),
+       template: declarativeTemplate({
+           ponyfills: [declarativeParts(), signals(), domScheduler()],
+       }),
    });
    ```
 
@@ -228,11 +232,16 @@ which property receives data.
    import { attributeMap } from "@microsoft/fast-element/attribute-map.js";
    import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
    import { observerMap } from "@microsoft/fast-element/observer-map.js";
+   import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+   import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+   import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
    MyElement.define(
        {
            name: "my-element",
-           template: declarativeTemplate(),
+           template: declarativeTemplate({
+               ponyfills: [declarativeParts(), signals(), domScheduler()],
+           }),
        },
        [attributeMap(), observerMap()],
    );
@@ -392,8 +401,8 @@ This is a **breaking change** for SSR output format. Any system that produces or
 
 - Subclass **`define()`** calls return `Promise<TType>` only for code that
   explicitly needs to observe registration completion. When
-  `template: declarativeTemplate()` is used, that Promise resolves after the
-  matching `<f-template>` supplies the concrete template.
+  `template: declarativeTemplate({ ponyfills })` is used, that Promise resolves
+  after the matching `<f-template>` supplies the concrete template.
 - Subclass compose helpers are no longer part of the public authoring surface; use subclass `define()` for registration.
 - **`@customElement` decorator** calls `define()` internally but does not return the Promise (fire-and-forget). For complete definitions with a template, the element is registered via a microtask.
 
@@ -411,7 +420,9 @@ This is a **breaking change** for SSR output format. Any system that produces or
     // After
     MyElement.define({
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     });
    ```
 

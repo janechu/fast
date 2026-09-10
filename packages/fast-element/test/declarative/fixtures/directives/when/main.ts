@@ -3,6 +3,9 @@ import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 import { FASTElement } from "@microsoft/fast-element/fast-element.js";
 import { enableHydration } from "@microsoft/fast-element/hydration.js";
 import { observable } from "@microsoft/fast-element/observable.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 class TestElementMultiple extends FASTElement {
     @attr()
@@ -10,7 +13,9 @@ class TestElementMultiple extends FASTElement {
 }
 TestElementMultiple.define({
     name: "test-element-multiple",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestElement extends FASTElement {
@@ -19,7 +24,9 @@ class TestElement extends FASTElement {
 }
 TestElement.define({
     name: "test-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestElementNot extends FASTElement {
@@ -28,7 +35,9 @@ class TestElementNot extends FASTElement {
 }
 TestElementNot.define({
     name: "test-element-not",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestElementEquals extends FASTElement {
@@ -37,7 +46,9 @@ class TestElementEquals extends FASTElement {
 }
 TestElementEquals.define({
     name: "test-element-equals",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestElementNotEquals extends FASTElement {
@@ -46,7 +57,9 @@ class TestElementNotEquals extends FASTElement {
 }
 TestElementNotEquals.define({
     name: "test-element-not-equals",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestElementGe extends FASTElement {
@@ -55,7 +68,9 @@ class TestElementGe extends FASTElement {
 }
 TestElementGe.define({
     name: "test-element-ge",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestElementGt extends FASTElement {
@@ -64,7 +79,9 @@ class TestElementGt extends FASTElement {
 }
 TestElementGt.define({
     name: "test-element-gt",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestElementLe extends FASTElement {
@@ -73,7 +90,9 @@ class TestElementLe extends FASTElement {
 }
 TestElementLe.define({
     name: "test-element-le",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestElementLt extends FASTElement {
@@ -82,7 +101,9 @@ class TestElementLt extends FASTElement {
 }
 TestElementLt.define({
     name: "test-element-lt",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestElementOr extends FASTElement {
@@ -94,7 +115,9 @@ class TestElementOr extends FASTElement {
 }
 TestElementOr.define({
     name: "test-element-or",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 class TestElementAnd extends FASTElement {
@@ -106,7 +129,9 @@ class TestElementAnd extends FASTElement {
 }
 TestElementAnd.define({
     name: "test-element-and",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 export class TestElementWhenFalseRepeat extends FASTElement {
@@ -118,7 +143,9 @@ export class TestElementWhenFalseRepeat extends FASTElement {
 }
 TestElementWhenFalseRepeat.define({
     name: "test-element-when-false-repeat",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 export class TestElementEvent extends FASTElement {
@@ -134,7 +161,9 @@ export class TestElementEvent extends FASTElement {
 }
 TestElementEvent.define({
     name: "test-element-event",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 export class NestedWhenElement extends FASTElement {
@@ -162,7 +191,9 @@ export class NestedWhenElement extends FASTElement {
 }
 NestedWhenElement.define({
     name: "nested-when",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 
 const hydration = enableHydration();

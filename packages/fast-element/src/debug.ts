@@ -12,8 +12,6 @@ const baseDebugMessages = {
         "No host element is present. Cannot bind host with ${name}.",
     [1205 /* unsupportedBindingBehavior */]:
         "The requested binding behavior is not supported by the binding engine.",
-    [1206 /* directCallToHTMLTagNotAllowed */]:
-        "Calling html`` as a normal function invalidates the security guarantees provided by FAST.",
     [1207 /* onlySetTemplatePolicyOnce */]:
         "The DOM Policy for an HTML template can only be set once.",
     [1208 /* cannotSetTemplatePolicyAfterCompilation */]:

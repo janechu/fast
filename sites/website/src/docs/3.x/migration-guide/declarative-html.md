@@ -39,7 +39,8 @@ Key migration points:
 
 1. Import declarative APIs from `@microsoft/fast-element` path exports.
 2. Replace `RenderableFASTElement(...).defineAsync()` with subclass `define()`.
-3. Replace public `TemplateElement` setup with `template: declarativeTemplate()`.
+3. Replace public `TemplateElement` setup with
+   `template: declarativeTemplate({ ponyfills })`.
 4. Replace `TemplateElement.options()` with define extensions.
 5. Replace `prepare()` with standard element lifecycle code.
 6. Update declarative event handlers to use `$e` instead of bare `e`.
@@ -57,6 +58,11 @@ import { deepMerge } from "@microsoft/fast-html/utilities.js";
 // After
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 import { deepMerge } from "@microsoft/fast-element/declarative-utilities.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
+
+const ponyfills = [declarativeParts(), signals(), domScheduler()];
 ```
 
 Map helpers are define extensions with their own path exports.
@@ -73,11 +79,11 @@ Keep importing core FAST Element APIs from the root package export.
 | `FASTElement`, `FAST`, `ElementController`, definition/controller types | `@microsoft/fast-element` |
 | `attr`, `AttributeDefinition`, converters, `ValueConverter` | `@microsoft/fast-element` |
 | `Observable`, `observable`, `volatile`, `Updates` | `@microsoft/fast-element` |
-| `html`, `css`, `ViewTemplate`, `HTMLView` | `@microsoft/fast-element` |
+| `css` | `@microsoft/fast-element` |
 | `Schema`, `schemaRegistry`, schema types | `@microsoft/fast-element` |
-| `Binding`, `oneWay`, `oneTime`, `listener` | `@microsoft/fast-element` |
 | `DOM`, `DOMAspect`, `DOMPolicy` | `@microsoft/fast-element` |
-| `children`, `elements`, `ref`, `repeat`, `slotted`, `when` | `@microsoft/fast-element` |
+| Declarative template runtime | `@microsoft/fast-element/declarative.js` |
+| DOM parts, Signals, and scheduling | `@microsoft/fast-element/ponyfills/*.js` |
 
 ## Replace `RenderableFASTElement`
 
@@ -100,7 +106,7 @@ import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 
 MyComponent.define({
     name: "my-component",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({ ponyfills }),
 });
 ```
 
@@ -112,11 +118,11 @@ the DOM, call `enableHydration()` before elements connect to hydrate it.
 ## Replace public `TemplateElement` setup
 
 The `<f-template>` implementation is now internal and is defined automatically
-when an element uses `template: declarativeTemplate()`.
+when an element uses `template: declarativeTemplate({ ponyfills })`.
 
 | Removed | Replacement |
 |---|---|
-| `TemplateElement` public export | `declarativeTemplate()` |
+| `TemplateElement` public export | `declarativeTemplate({ ponyfills })` |
 | `TemplateElement.define({ name: "f-template" })` | No manual definition needed. |
 | `TemplateElement.config(callbacks)` | `enableHydration().whenHydrated(tagName)` for tag-specific hydration waits and `enableHydration().whenHydrated()` for the active hydration batch. |
 | `TemplateElement.options(...)` | `attributeMap()` and `observerMap()` define extensions. |
@@ -146,7 +152,7 @@ import { observerMap } from "@microsoft/fast-element/observer-map.js";
 MyElement.define(
     {
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({ ponyfills }),
     },
     [attributeMap(), observerMap()],
 );
@@ -171,7 +177,7 @@ MyElement.define({ name: "my-element" }, [observerMap({ schema })]);
 `TemplateOptions`, `PartialFASTElementDefinition.templateOptions`, and
 `FASTElementDefinition.templateOptions` have been removed. Remove
 `templateOptions` from element definitions and use
-`template: declarativeTemplate()` when declarative markup should supply the
+`template: declarativeTemplate({ ponyfills })` when declarative markup should supply the
 template.
 
 ```ts
@@ -184,7 +190,7 @@ MyElement.define({
 // After
 MyElement.define({
     name: "my-element",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({ ponyfills }),
 });
 ```
 
@@ -206,7 +212,7 @@ import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 MyElement.define(
     {
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({ ponyfills }),
     },
     [attributeMap({ "attribute-name-strategy": "none" })],
 );
@@ -271,8 +277,8 @@ decide whether client initialization should run.
 ## Verify `<f-template>` loading order
 
 A declarative FASTElement component requires a JavaScript class definition with
-`template: declarativeTemplate()` and an `<f-template>` whose `name` matches the
-custom element tag name.
+`template: declarativeTemplate({ ponyfills })` and an `<f-template>` whose
+`name` matches the custom element tag name.
 
 ```html
 <f-template name="my-counter">
@@ -286,6 +292,11 @@ custom element tag name.
 ```ts
 import { attr, FASTElement } from "@microsoft/fast-element";
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
+
+const ponyfills = [declarativeParts(), signals(), domScheduler()];
 
 class MyCounter extends FASTElement {
     @attr count: number = 0;
@@ -293,7 +304,7 @@ class MyCounter extends FASTElement {
 
 MyCounter.define({
     name: "my-counter",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({ ponyfills }),
 });
 ```
 
@@ -311,7 +322,7 @@ the script module loads.
 3. Remove manual `TemplateElement.define()` calls.
 4. Replace `TemplateElement.options()` with define extensions passed as the
    second argument to `define()`.
-5. Remove `templateOptions`; use `template: declarativeTemplate()` when
+5. Remove `templateOptions`; use `template: declarativeTemplate({ ponyfills })` when
    declarative markup supplies the template.
 6. Configure `attributeMap({ "attribute-name-strategy": "none" })` only if you
    need v2 literal attribute-name behavior, and align the server renderer option.

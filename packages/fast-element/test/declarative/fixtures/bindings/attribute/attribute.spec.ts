@@ -71,4 +71,34 @@ test.describe("f-template", async () => {
 
         await expect(customElementInput).not.toHaveAttribute("disabled");
     });
+
+    test("preserves namespaced attribute bindings", async ({ page }) => {
+        const hydrationCompleted = page.waitForFunction(
+            () => (window as any).hydrationCompleted === true,
+        );
+        await page.goto("/fixtures/bindings/attribute/");
+        await hydrationCompleted;
+
+        const use = page.locator("test-element-namespaced-attribute use");
+        const namespace = "http://www.w3.org/1999/xlink";
+        const initialValue = await use.evaluate(
+            (element, namespace) => element.getAttributeNS(namespace, "href"),
+            namespace,
+        );
+
+        await page.locator("test-element-namespaced-attribute").evaluate(element => {
+            (element as any).href = "#updated";
+        });
+
+        await expect
+            .poll(() =>
+                use.evaluate(
+                    (element, namespace) => element.getAttributeNS(namespace, "href"),
+                    namespace,
+                ),
+            )
+            .toBe("#updated");
+
+        expect(initialValue).toBe("#icon");
+    });
 });

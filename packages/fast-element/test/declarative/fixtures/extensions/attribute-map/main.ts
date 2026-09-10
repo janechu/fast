@@ -2,6 +2,9 @@ import { attr } from "@microsoft/fast-element/attr.js";
 import { attributeMap } from "@microsoft/fast-element/attribute-map.js";
 import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
 import { FASTElement } from "@microsoft/fast-element/fast-element.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 class AttributeMapTestElement extends FASTElement {
     public setFoo() {
@@ -21,7 +24,9 @@ class AttributeMapTestElement extends FASTElement {
 AttributeMapTestElement.define(
     {
         name: "attribute-map-test-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [attributeMap()],
 );
@@ -34,7 +39,9 @@ class AttributeMapWithExistingAttrElement extends FASTElement {
 AttributeMapWithExistingAttrElement.define(
     {
         name: "attribute-map-existing-attr-test-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [attributeMap()],
 );

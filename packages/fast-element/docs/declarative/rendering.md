@@ -61,6 +61,10 @@ Include the DI service to your component.
 Example:
 ```typescript
 import { attr, FASTElement, Observable } from "@microsoft/fast-element";
+import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 import {
     initialStateFactory,
     InitialStateService,
@@ -91,7 +95,9 @@ export class MyComponent extends FASTElement {
 
 MyComponent.define({
     name: "my-component",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 ```
 

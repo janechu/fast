@@ -12,10 +12,9 @@ core runtime and its declarative entrypoint:
   element definition system.
 - **`@microsoft/fast-element/declarative.js`**: Provides the `f-template`
   custom element that processes HTML templates and attaches them to FAST
-  elements as a `ViewTemplate` in lieu of an `html` template created during
-  a subclass `define()` call. The preferred path uses `declarativeTemplate()` so
-  the subclass `define()` call waits for the matching declarative template and keeps
-  the definition concrete before registration completes.
+  elements as a `ViewTemplate`. The required `declarativeTemplate({ ponyfills })`
+  path makes the subclass `define()` call wait for the matching declarative
+  template and keeps the definition concrete before registration completes.
 
 ## Lifecycle Phases
 
@@ -44,6 +43,11 @@ Custom elements begin their lifecycle by composing a definition that points at
 and returns a concrete `ViewTemplate` before the platform registration step.
 
 ```typescript
+import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
+
 // Custom element class definition
 class MyComponent extends FASTElement {
     @attr text: string = "";
@@ -52,7 +56,9 @@ class MyComponent extends FASTElement {
 // Register with the declarative template bridge
 MyComponent.define({
     name: "my-component",
-    template: declarativeTemplate(),
+    template: declarativeTemplate({
+        ponyfills: [declarativeParts(), signals(), domScheduler()],
+    }),
 });
 ```
 
@@ -78,8 +84,9 @@ The lifecycle flow during this phase:
    `connectedCallback()` registers it with the declarative template bridge.
 3. **Template Processing**: The bridge reads and transforms the markup, builds
    the schema, applies `observerMap()` / `attributeMap()` behavior, and resolves
-   data bindings, directives, and other template features into the `ViewTemplate`
-   model which is also used by the `@microsoft/fast-element` `html` tag template.
+   data bindings, directives, and other template features into the internal
+   `ViewTemplate` model through the configured part, Signals, and scheduler
+   capabilities.
 4. **Template Attachment**: The concrete `ViewTemplate` is returned to
    the subclass `define()` call, which assigns it to the definition before platform
    registration completes.

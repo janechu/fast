@@ -80,7 +80,6 @@ export const enum Message {
     twoWayBindingRequiresObservables = 1203,
     hostBindingWithoutHost = 1204,
     unsupportedBindingBehavior = 1205,
-    directCallToHTMLTagNotAllowed = 1206,
     onlySetTemplatePolicyOnce = 1207,
     cannotSetTemplatePolicyAfterCompilation = 1208,
     blockedByDOMPolicy = 1209,

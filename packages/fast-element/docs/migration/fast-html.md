@@ -49,9 +49,16 @@ See the [`@microsoft/fast-element` migration guide](./fast-element-3.md#hydratio
    });
 
    // After
+   import { declarativeTemplate } from "@microsoft/fast-element/declarative.js";
+   import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+   import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+   import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
+
    MyComponent.define({
        name: "my-component",
-       template: declarativeTemplate(),
+       template: declarativeTemplate({
+           ponyfills: [declarativeParts(), signals(), domScheduler()],
+       }),
    });
    ```
 
@@ -167,11 +174,16 @@ templates depended on literal attribute names, opt back in to the old behavior:
 
 ```ts
 import { attributeMap } from "@microsoft/fast-element/attribute-map.js";
+import { declarativeParts } from "@microsoft/fast-element/ponyfills/declarative-parts.js";
+import { domScheduler } from "@microsoft/fast-element/ponyfills/dom-scheduler.js";
+import { signals } from "@microsoft/fast-element/ponyfills/signals.js";
 
 MyElement.define(
     {
         name: "my-element",
-        template: declarativeTemplate(),
+        template: declarativeTemplate({
+            ponyfills: [declarativeParts(), signals(), domScheduler()],
+        }),
     },
     [attributeMap({ "attribute-name-strategy": "none" })],
 );

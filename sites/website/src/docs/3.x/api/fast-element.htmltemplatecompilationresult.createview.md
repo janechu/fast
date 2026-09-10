@@ -61,4 +61,4 @@ _(Optional)_ The host binding target for the view.
 
 **Returns:**
 
-[HTMLView](../fast-element.htmlview/)<!-- -->&lt;TSource, TParent&gt;
+HTMLView&lt;TSource, TParent&gt;
