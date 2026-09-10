@@ -12,16 +12,26 @@ export function declarativeParts(): DeclarativePonyfillGroup;
 // Warning: (ae-forgotten-export) The symbol "PartBase" needs to be exported by the entry point declarative-parts.d.ts
 //
 // @public
-export class EventPart extends PartBase<EventListenerOrEventListenerObject | null> {
-    constructor(element: Element, eventType: string, options?: (AddEventListenerOptions | boolean) | undefined);
+export class EventPart extends PartBase<EventListenerOrEventListenerObject | null | undefined> {
+    constructor(element: EventTarget, eventType: string, options?: AddEventListenerOptions | boolean);
     // (undocumented)
-    protected commitValue(value: EventListenerOrEventListenerObject | null): void;
+    readonly capture: boolean;
     // (undocumented)
-    readonly element: Element;
+    protected commitValue(value: EventListenerOrEventListenerObject | null | undefined): void;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    readonly element: EventTarget;
     // (undocumented)
     readonly eventType: string;
     // (undocumented)
-    readonly options?: (AddEventListenerOptions | boolean) | undefined;
+    readonly once: boolean;
+    // (undocumented)
+    readonly options: AddEventListenerOptions;
+    // (undocumented)
+    readonly passive: boolean;
+    // (undocumented)
+    readonly signal: AbortSignal | null;
 }
 
 // Warning: (ae-forgotten-export) The symbol "DeclarativeEventPartPonyfill" needs to be exported by the entry point declarative-parts.d.ts

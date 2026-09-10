@@ -11,10 +11,13 @@ import {
  * A lazily evaluated computed signal.
  * @public
  */
-export class ComputedSignal<T> extends SignalDependencySet
+export class ComputedSignal<T>
+    extends SignalDependencySet
     implements DeclarativeSignal<T>, SignalSubscriber
 {
     private current: T;
+    private error: unknown;
+    private hasError = false;
     private dirty = true;
     private readonly dependencies = new Set<SignalDependency>();
 
@@ -30,11 +33,17 @@ export class ComputedSignal<T> extends SignalDependencySet
 
             try {
                 this.current = evaluateWithSignals(this, this.compute);
-                this.dirty = false;
+                this.hasError = false;
             } catch (error) {
-                this.clearDependencies();
-                throw error;
+                this.error = error;
+                this.hasError = true;
+            } finally {
+                this.dirty = false;
             }
+        }
+
+        if (this.hasError) {
+            throw this.error;
         }
 
         return this.current;

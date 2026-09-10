@@ -7,9 +7,8 @@ test.beforeEach(async ({ page }) => {
 
 test("parts stage values until commit", async ({ page }) => {
     const result = await page.evaluate(() => {
-        const { AttributePart, NodePart, PropertyPart, TokenListPart } = (
-            window as any
-        ).ponyfillTestAPI;
+        const { AttributePart, NodePart, PropertyPart, TokenListPart } = (window as any)
+            .ponyfillTestAPI;
         const text = document.createTextNode("before");
         const element = document.createElement("input");
         const nodePart = new NodePart(text);
@@ -68,6 +67,66 @@ test("parts stage values until commit", async ({ page }) => {
     });
 });
 
+test("failed and recursive Part commits preserve the staged value", async ({ page }) => {
+    const result = await page.evaluate(() => {
+        const { PartBase } = (window as any).ponyfillTestAPI;
+
+        class TestPart extends PartBase {
+            public commits: string[] = [];
+
+            protected commitValue(value: string): void {
+                this.commits.push(value);
+
+                if (value === "fail") {
+                    throw new Error("expected commit failure");
+                }
+
+                if (value === "recurse") {
+                    this.commit();
+                }
+            }
+        }
+
+        const part = new TestPart();
+        part.value = "fail";
+        let failedMessage = "";
+
+        try {
+            part.commit();
+        } catch (error) {
+            failedMessage = (error as Error).message;
+        }
+
+        const stagedAfterFailure = part.value;
+        part.value = "success";
+        part.commit();
+        part.value = "recurse";
+        let recursiveMessage = "";
+
+        try {
+            part.commit();
+        } catch (error) {
+            recursiveMessage = (error as Error).message;
+        }
+
+        return {
+            commits: part.commits,
+            failedMessage,
+            recursiveMessage,
+            stagedAfterFailure,
+            stagedAfterReentrancy: part.value,
+        };
+    });
+
+    expect(result).toEqual({
+        commits: ["fail", "success", "recurse"],
+        failedMessage: "expected commit failure",
+        recursiveMessage: "Part commit is already in progress.",
+        stagedAfterFailure: "fail",
+        stagedAfterReentrancy: "recurse",
+    });
+});
+
 test("ChildNodePart owns only its bounded sibling range", async ({ page }) => {
     const text = await page.evaluate(() => {
         const { ChildNodePart } = (window as any).ponyfillTestAPI;
@@ -85,6 +144,82 @@ test("ChildNodePart owns only its bounded sibling range", async ({ page }) => {
     });
 
     expect(text).toBe("newoutside");
+});
+
+test("ChildNodePart preserves its full-parent compatibility form", async ({ page }) => {
+    const text = await page.evaluate(() => {
+        const { ChildNodePart } = (window as any).ponyfillTestAPI;
+        const parent = document.createElement("div");
+        parent.textContent = "old";
+        const part = new ChildNodePart(parent);
+        part.value = "new";
+        part.commit();
+        return parent.textContent;
+    });
+
+    expect(text).toBe("new");
+});
+
+test("ChildNodePart validates replacement values before clearing its range", async ({
+    page,
+}) => {
+    const result = await page.evaluate(() => {
+        const { ChildNodePart } = (window as any).ponyfillTestAPI;
+        const parent = document.createElement("div");
+        const start = document.createComment("start");
+        const old = document.createTextNode("old");
+        const end = document.createComment("end");
+        parent.append(start, old, end);
+        const part = new ChildNodePart(parent, start, end);
+        const value = {
+            *[Symbol.iterator]() {
+                yield "new";
+                throw new Error("expected conversion failure");
+            },
+        };
+        part.value = value;
+        let message = "";
+
+        try {
+            part.commit();
+        } catch (error) {
+            message = (error as Error).message;
+        }
+
+        part.value = [end];
+        let boundaryName = "";
+
+        try {
+            part.commit();
+        } catch (error) {
+            boundaryName = (error as DOMException).name;
+        }
+
+        part.value = [parent];
+        let cycleName = "";
+
+        try {
+            part.commit();
+        } catch (error) {
+            cycleName = (error as DOMException).name;
+        }
+
+        return {
+            boundaryName,
+            cycleName,
+            message,
+            staged: part.value[0] === parent,
+            text: parent.textContent,
+        };
+    });
+
+    expect(result).toEqual({
+        boundaryName: "HierarchyRequestError",
+        cycleName: "HierarchyRequestError",
+        message: "expected conversion failure",
+        staged: true,
+        text: "old",
+    });
 });
 
 test("EventPart replaces and removes its listener", async ({ page }) => {
@@ -109,6 +244,153 @@ test("EventPart replaces and removes its listener", async ({ page }) => {
     });
 
     expect(count).toBe(11);
+});
+
+test("EventPart snapshots options and supports once, abort, and disposal", async ({
+    page,
+}) => {
+    const result = await page.evaluate(() => {
+        const { EventPart } = (window as any).ponyfillTestAPI;
+        const button = document.createElement("button");
+        const mutableOptions = { capture: false };
+        const stable = new EventPart(button, "click", mutableOptions);
+        let stableCount = 0;
+        stable.value = () => stableCount++;
+        stable.commit();
+        mutableOptions.capture = true;
+        stable.dispose();
+        button.click();
+        const disposedValue = stable.value;
+        stable.value = undefined;
+        stable.commit();
+
+        const once = new EventPart(button, "click", { once: true });
+        let onceCount = 0;
+        const onceListener = () => onceCount++;
+        once.value = onceListener;
+        once.commit();
+        button.click();
+        button.click();
+        once.value = onceListener;
+        once.commit();
+        button.click();
+
+        const controller = new AbortController();
+        const aborted = new EventPart(button, "click", {
+            signal: controller.signal,
+        });
+        aborted.value = () => void 0;
+        aborted.commit();
+        controller.abort();
+        aborted.value = () => void 0;
+        let abortName = "";
+
+        try {
+            aborted.commit();
+        } catch (error) {
+            abortName = (error as DOMException).name;
+        }
+
+        return {
+            abortName,
+            abortedValueType: typeof aborted.value,
+            capture: stable.capture,
+            disposedValue,
+            once: once.once,
+            onceCount,
+            stableCount,
+        };
+    });
+
+    expect(result).toEqual({
+        abortName: "InvalidStateError",
+        abortedValueType: "function",
+        capture: false,
+        disposedValue: null,
+        once: true,
+        onceCount: 2,
+        stableCount: 0,
+    });
+});
+
+test("TokenListPart preserves tokens it did not introduce", async ({ page }) => {
+    const result = await page.evaluate(() => {
+        const { TokenListPart } = (window as any).ponyfillTestAPI;
+        const element = document.createElement("div");
+        element.classList.add("external");
+        const part = new TokenListPart(element, "classList");
+        part.value = "external owned";
+        part.commit();
+        element.classList.remove("owned");
+        part.value = "external owned";
+        part.commit();
+        const restored = element.classList.contains("owned");
+        part.value = "";
+        part.commit();
+        return { className: element.className, restored };
+    });
+
+    expect(result).toEqual({
+        className: "external",
+        restored: true,
+    });
+});
+
+test("PartGroup drains failures and rejects recursive commits", async ({ page }) => {
+    const result = await page.evaluate(() => {
+        const { PartBase, PartGroup } = (window as any).ponyfillTestAPI;
+        const calls: string[] = [];
+
+        class TestPart extends PartBase {
+            public constructor(
+                private readonly name: string,
+                private readonly action?: () => void,
+            ) {
+                super();
+            }
+
+            protected commitValue(): void {
+                calls.push(this.name);
+                this.action?.();
+            }
+        }
+
+        const bad = new TestPart("bad", () => {
+            throw new Error("bad");
+        });
+        const good = new TestPart("good");
+        bad.value = null;
+        good.value = null;
+        let errors: string[] = [];
+
+        try {
+            new PartGroup([bad, good]).commit();
+        } catch (error) {
+            errors = (error as AggregateError).errors.map(
+                item => (item as Error).message,
+            );
+        }
+
+        let group: InstanceType<typeof PartGroup>;
+        const recursive = new TestPart("recursive", () => group.commit());
+        recursive.value = null;
+        group = new PartGroup([recursive]);
+        let recursiveMessage = "";
+
+        try {
+            group.commit();
+        } catch (error) {
+            recursiveMessage = (error as AggregateError).errors[0].message;
+        }
+
+        return { calls, errors, recursiveMessage };
+    });
+
+    expect(result).toEqual({
+        calls: ["bad", "good", "recursive"],
+        errors: ["bad"],
+        recursiveMessage: "Part group commit is already in progress.",
+    });
 });
 
 test("DOM scheduler deduplicates and orders ancestors before descendants", async ({
@@ -138,9 +420,49 @@ test("DOM scheduler deduplicates and orders ancestors before descendants", async
     expect(result).toEqual(["parent", "child"]);
 });
 
-test("DOM scheduler drains remaining work before surfacing errors", async ({
-    page,
-}) => {
+test("DOM scheduler deduplicates by target and callback", async ({ page }) => {
+    const calls = await page.evaluate(() => {
+        const { domScheduler } = (window as any).ponyfillTestAPI;
+        const scheduler = domScheduler();
+        const first = document.createElement("div");
+        const second = document.createElement("div");
+        document.body.append(first, second);
+        const calls: string[] = [];
+        const task = { call: () => calls.push("run") };
+        scheduler.enqueue(first, task);
+        scheduler.enqueue(second, task);
+        scheduler.flush();
+        return calls;
+    });
+
+    expect(calls).toEqual(["run", "run"]);
+});
+
+test("DOM scheduler reorders remaining work after topology changes", async ({ page }) => {
+    const calls = await page.evaluate(() => {
+        const { domScheduler } = (window as any).ponyfillTestAPI;
+        const scheduler = domScheduler();
+        const parent = document.createElement("div");
+        const first = document.createElement("div");
+        const second = document.createElement("div");
+        parent.append(first, second);
+        document.body.append(parent);
+        const calls: string[] = [];
+
+        scheduler.enqueue(first, () => calls.push("first"));
+        scheduler.enqueue(second, () => calls.push("second"));
+        scheduler.enqueue(parent, () => {
+            calls.push("parent");
+            parent.append(first);
+        });
+        scheduler.flush();
+        return calls;
+    });
+
+    expect(calls).toEqual(["parent", "second", "first"]);
+});
+
+test("DOM scheduler drains remaining work before surfacing errors", async ({ page }) => {
     const result = await page.evaluate(() => {
         const { domScheduler } = (window as any).ponyfillTestAPI;
         const scheduler = domScheduler();
@@ -197,7 +519,9 @@ test("Signals state, computed values, and effects compose independently", async 
     expect(values).toEqual([2, 4]);
 });
 
-test("Signals clean up failed computed values and effects", async ({ page }) => {
+test("Signals cache computed errors and retain failed effect dependencies", async ({
+    page,
+}) => {
     const result = await page.evaluate(async () => {
         const { domScheduler, signals } = (window as any).ponyfillTestAPI;
         const scheduler = domScheduler();
@@ -215,35 +539,50 @@ test("Signals clean up failed computed values and effects", async ({ page }) => 
             return state.get();
         });
 
-        try {
-            computed.get();
-        } catch {}
+        const computedErrors: string[] = [];
 
-        const computedValue = computed.get();
-        let effectRuns = 0;
-
-        try {
-            signalAPI.effect(
-                document.body,
-                () => {
-                    effectRuns++;
-                    state.get();
-                    throw new Error("expected effect failure");
-                },
-                scheduler,
-            );
-        } catch {}
+        for (let index = 0; index < 2; index++) {
+            try {
+                computed.get();
+            } catch (error) {
+                computedErrors.push((error as Error).message);
+            }
+        }
 
         state.set(2);
-        await scheduler.next();
+        const computedValue = computed.get();
+        let effectRuns = 0;
+        const effect = signalAPI.effect(
+            document.body,
+            () => {
+                effectRuns++;
+                state.get();
 
-        return { computedRuns, computedValue, effectRuns };
+                if (effectRuns === 2) {
+                    throw new Error("expected effect failure");
+                }
+            },
+            scheduler,
+        );
+
+        state.set(3);
+
+        try {
+            scheduler.flush();
+        } catch {}
+
+        state.set(4);
+        scheduler.flush();
+        effect.dispose();
+
+        return { computedErrors, computedRuns, computedValue, effectRuns };
     });
 
     expect(result).toEqual({
+        computedErrors: ["expected computed failure", "expected computed failure"],
         computedRuns: 2,
-        computedValue: 1,
-        effectRuns: 1,
+        computedValue: 2,
+        effectRuns: 3,
     });
 });
 

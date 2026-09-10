@@ -6,7 +6,7 @@ import { PartBase } from "./part.js";
  * @public
  */
 export class TokenListPart extends PartBase<any> {
-    private readonly tokens = new Set<string>();
+    private readonly introducedTokens = new Set<string>();
 
     public constructor(
         public readonly element: Element,
@@ -21,17 +21,17 @@ export class TokenListPart extends PartBase<any> {
             value == null || value === "" ? [] : String(value).split(/\s+/),
         );
 
-        for (const token of this.tokens) {
+        for (const token of this.introducedTokens) {
             if (!next.has(token)) {
                 tokenList.remove(token);
-                this.tokens.delete(token);
+                this.introducedTokens.delete(token);
             }
         }
 
         for (const token of next) {
-            if (token !== "" && !this.tokens.has(token)) {
+            if (token !== "" && !tokenList.contains(token)) {
                 tokenList.add(token);
-                this.tokens.add(token);
+                this.introducedTokens.add(token);
             }
         }
     }

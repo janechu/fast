@@ -32,21 +32,21 @@ Bundle sizes for `@microsoft/fast-element` exports.
 | ArrayObserver (@microsoft/fast-element/arrays.js) | 12.48 KB | 4.44 KB | 4.00 KB |
 | observerMap (@microsoft/fast-element/observer-map.js) | 21.89 KB | 7.70 KB | 6.95 KB |
 | attributeMap (@microsoft/fast-element/attribute-map.js) | 15.24 KB | 5.38 KB | 4.85 KB |
-| PartBase (@microsoft/fast-element/ponyfills/part.js) | 303 B | 165 B | 137 B |
-| PartGroup (@microsoft/fast-element/ponyfills/part-group.js) | 137 B | 129 B | 102 B |
-| nodeParts (@microsoft/fast-element/ponyfills/node-part.js) | 517 B | 256 B | 214 B |
-| attributeParts (@microsoft/fast-element/ponyfills/attribute-part.js) | 1.06 KB | 450 B | 398 B |
-| childNodeParts (@microsoft/fast-element/ponyfills/child-node-part.js) | 1.23 KB | 555 B | 487 B |
-| propertyParts (@microsoft/fast-element/ponyfills/property-part.js) | 541 B | 258 B | 208 B |
-| eventParts (@microsoft/fast-element/ponyfills/event-part.js) | 729 B | 309 B | 261 B |
-| tokenListParts (@microsoft/fast-element/ponyfills/token-list-part.js) | 772 B | 373 B | 318 B |
-| viewParts (@microsoft/fast-element/ponyfills/view-part.js) | 19.73 KB | 6.13 KB | 5.45 KB |
-| domParts (@microsoft/fast-element/ponyfills/dom-parts.js) | 2.26 KB | 872 B | 740 B |
-| declarativeParts (@microsoft/fast-element/ponyfills/declarative-parts.js) | 22.91 KB | 6.96 KB | 6.18 KB |
+| PartBase (@microsoft/fast-element/ponyfills/part.js) | 589 B | 291 B | 261 B |
+| PartGroup (@microsoft/fast-element/ponyfills/part-group.js) | 679 B | 390 B | 313 B |
+| nodeParts (@microsoft/fast-element/ponyfills/node-part.js) | 803 B | 378 B | 318 B |
+| attributeParts (@microsoft/fast-element/ponyfills/attribute-part.js) | 1.34 KB | 567 B | 481 B |
+| childNodeParts (@microsoft/fast-element/ponyfills/child-node-part.js) | 3.91 KB | 1.33 KB | 1.13 KB |
+| propertyParts (@microsoft/fast-element/ponyfills/property-part.js) | 827 B | 381 B | 314 B |
+| eventParts (@microsoft/fast-element/ponyfills/event-part.js) | 2.05 KB | 757 B | 656 B |
+| tokenListParts (@microsoft/fast-element/ponyfills/token-list-part.js) | 1.07 KB | 507 B | 424 B |
+| viewParts (@microsoft/fast-element/ponyfills/view-part.js) | 20.00 KB | 6.22 KB | 5.53 KB |
+| domParts (@microsoft/fast-element/ponyfills/dom-parts.js) | 4.94 KB | 1.63 KB | 1.39 KB |
+| declarativeParts (@microsoft/fast-element/ponyfills/declarative-parts.js) | 26.68 KB | 7.95 KB | 7.04 KB |
 | signalState (@microsoft/fast-element/ponyfills/signal-state.js) | 475 B | 272 B | 234 B |
-| signalComputed (@microsoft/fast-element/ponyfills/signal-computed.js) | 830 B | 382 B | 335 B |
-| signalEffect (@microsoft/fast-element/ponyfills/signal-effect.js) | 700 B | 339 B | 288 B |
-| signals (@microsoft/fast-element/ponyfills/signals.js) | 9.21 KB | 3.16 KB | 2.83 KB |
-| domScheduler (@microsoft/fast-element/ponyfills/dom-scheduler.js) | 1.91 KB | 951 B | 817 B |
-| declarative + aggregate parts | 72.17 KB | 22.16 KB | 19.65 KB |
-| declarative + individual binding parts | 72.05 KB | 22.13 KB | 19.62 KB |
+| signalComputed (@microsoft/fast-element/ponyfills/signal-computed.js) | 903 B | 405 B | 363 B |
+| signalEffect (@microsoft/fast-element/ponyfills/signal-effect.js) | 650 B | 328 B | 273 B |
+| signals (@microsoft/fast-element/ponyfills/signals.js) | 9.24 KB | 3.18 KB | 2.84 KB |
+| domScheduler (@microsoft/fast-element/ponyfills/dom-scheduler.js) | 2.35 KB | 1.11 KB | 991 B |
+| declarative + aggregate parts | 76.40 KB | 23.36 KB | 20.65 KB |
+| declarative + individual binding parts | 76.28 KB | 23.33 KB | 20.66 KB |

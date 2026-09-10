@@ -12,20 +12,63 @@ function invoke(task: Callable): void {
     (task as any).call();
 }
 
+function getShadowIncludingPath(node: Node): Node[] {
+    const path: Node[] = [];
+    let current: Node | null = node;
+
+    while (current !== null) {
+        path.push(current);
+
+        if (current.parentNode !== null) {
+            current = current.parentNode;
+        } else {
+            const root = current.getRootNode();
+            current = root instanceof ShadowRoot ? root.host : null;
+        }
+    }
+
+    return path.reverse();
+}
+
 function compareTasks(left: ScheduledTask, right: ScheduledTask): number {
     if (left.target === right.target) {
         return left.order - right.order;
     }
 
-    if (left.target.contains(right.target)) {
+    const leftPath = getShadowIncludingPath(left.target);
+    const rightPath = getShadowIncludingPath(right.target);
+
+    if (leftPath[0] !== rightPath[0]) {
+        return left.order - right.order;
+    }
+
+    const sharedLength = Math.min(leftPath.length, rightPath.length);
+    let index = 0;
+
+    while (index < sharedLength && leftPath[index] === rightPath[index]) {
+        index++;
+    }
+
+    if (index === leftPath.length) {
         return -1;
     }
 
-    if (right.target.contains(left.target)) {
+    if (index === rightPath.length) {
         return 1;
     }
 
-    const position = left.target.compareDocumentPosition(right.target);
+    const leftBranch = leftPath[index];
+    const rightBranch = rightPath[index];
+
+    if (leftBranch instanceof ShadowRoot) {
+        return -1;
+    }
+
+    if (rightBranch instanceof ShadowRoot) {
+        return 1;
+    }
+
+    const position = leftBranch.compareDocumentPosition(rightBranch);
 
     if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
         return -1;
@@ -40,7 +83,7 @@ function compareTasks(left: ScheduledTask, right: ScheduledTask): number {
 
 class DOMSchedulerPonyfill implements DeclarativeDOMSchedulerPonyfill {
     public readonly kind = "dom-scheduler";
-    private readonly tasks = new Map<Callable, ScheduledTask>();
+    private readonly tasks = new Map<Callable, Map<Node, ScheduledTask>>();
     private readonly waiters: Array<() => void> = [];
     private order = 0;
     private pending = false;
@@ -49,8 +92,15 @@ class DOMSchedulerPonyfill implements DeclarativeDOMSchedulerPonyfill {
     public constructor(private readonly usePlatformQueue: boolean) {}
 
     public enqueue(target: Node, task: Callable): void {
-        if (!this.tasks.has(task)) {
-            this.tasks.set(task, { target, task, order: this.order++ });
+        let targets = this.tasks.get(task);
+
+        if (targets === void 0) {
+            targets = new Map();
+            this.tasks.set(task, targets);
+        }
+
+        if (!targets.has(target)) {
+            targets.set(target, { target, task, order: this.order++ });
         }
 
         if (!this.pending && !this.processing) {
@@ -86,10 +136,18 @@ class DOMSchedulerPonyfill implements DeclarativeDOMSchedulerPonyfill {
 
         try {
             drain: while (this.tasks.size > 0) {
-                const batch = Array.from(this.tasks.values()).sort(compareTasks);
+                const batch: ScheduledTask[] = [];
+
+                for (const targets of this.tasks.values()) {
+                    batch.push(...targets.values());
+                }
+
                 this.tasks.clear();
 
-                for (const entry of batch) {
+                while (batch.length > 0) {
+                    batch.sort(compareTasks);
+                    const entry = batch.shift()!;
+
                     try {
                         invoke(entry.task);
                     } catch (error) {

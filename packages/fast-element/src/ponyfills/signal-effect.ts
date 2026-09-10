@@ -14,9 +14,7 @@ import {
  * scheduler capability.
  * @public
  */
-export class SignalEffect
-    implements DeclarativeSignalEffect, SignalSubscriber
-{
+export class SignalEffect implements DeclarativeSignalEffect, SignalSubscriber {
     private disposed = false;
     private readonly dependencies = new Set<SignalDependency>();
 
@@ -42,13 +40,7 @@ export class SignalEffect
     public call(): void {
         if (!this.disposed) {
             this.clearDependencies();
-
-            try {
-                evaluateWithSignals(this, this.callback);
-            } catch (error) {
-                this.clearDependencies();
-                throw error;
-            }
+            evaluateWithSignals(this, this.callback);
         }
     }
 
